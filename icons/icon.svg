@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="FitARM">
+  <rect width="512" height="512" rx="112" fill="#0f7a5f"/>
+  <circle cx="256" cy="256" r="172" fill="#fbfcf8"/>
+  <path d="M154 294c34-82 92-128 174-138 17-2 29 15 22 31-31 75-83 118-157 131-24 4-48-1-39-24z" fill="#1a8a6d"/>
+  <path d="M188 318c50-26 91-62 126-110" fill="none" stroke="#123b33" stroke-width="24" stroke-linecap="round"/>
+  <path d="M160 360h192" fill="none" stroke="#123b33" stroke-width="30" stroke-linecap="round"/>
+  <path d="M184 392h144" fill="none" stroke="#123b33" stroke-width="24" stroke-linecap="round"/>
+  <circle cx="348" cy="164" r="34" fill="#f0b44c"/>
+</svg>

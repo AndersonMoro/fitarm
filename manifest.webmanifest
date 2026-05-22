@@ -1,0 +1,36 @@
+{
+  "name": "FitARM - Controle Alimentar Inteligente",
+  "short_name": "FitARM",
+  "description": "Controle alimentar inteligente com metas calóricas, carga glicêmica, preparo dos alimentos e sugestões de porção.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fbfcf8",
+  "theme_color": "#0f7a5f",
+  "lang": "pt-BR",
+  "categories": ["health", "fitness", "food"],
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Registrar refeição",
+      "short_name": "Refeição",
+      "description": "Abrir o app para registrar uma refeição",
+      "url": "./index.html#nova-refeicao",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

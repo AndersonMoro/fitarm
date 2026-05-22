@@ -1,0 +1,497 @@
+# Memoria FitARM
+
+Atualizado em: 2026-05-21
+
+## Objetivo do app
+
+FitARM é uma aplicação de controle alimentar inteligente. O usuário informa o que tem para comer, como o alimento foi preparado e o app sugere quantas gramas consumir de cada item conforme meta calórica, objetivo, perfil clínico e impacto metabólico.
+
+O app também acompanha ao longo do dia:
+
+- calorias consumidas;
+- calorias restantes;
+- proteína;
+- fibras;
+- carga glicêmica;
+- alertas para diabetes/controle glicêmico;
+- alertas para hipertensão/sódio;
+- sugestões diárias.
+
+O app é educacional e não substitui nutricionista, médico ou orientação clínica individualizada.
+
+## Fonte técnica usada
+
+Arquivo técnico de referência no projeto:
+
+- `Base_Cientifica_Controle_Alimentar (1).docx`
+
+Principais bases citadas no documento e usadas como lógica inicial:
+
+- TACO/UNICAMP: composição de alimentos brasileiros.
+- TBCA/USP: composição de alimentos e preparações.
+- USDA FoodData Central: composição alimentar complementar.
+- SBD 2024/2025: terapia nutricional em diabetes e pré-diabetes.
+- OMS/WHO: sódio e potássio.
+- ISSN: proteína, hipertrofia, composição corporal e nutrient timing.
+- International Tables of Glycemic Index and Glycemic Load Values 2021.
+- Harvard Health / University of Sydney GI Database: índice glicêmico.
+
+## Estado atual do projeto
+
+Tipo atual:
+
+- Web app estático.
+- PWA instalável.
+- Sem backend.
+- Dados persistidos no `localStorage` do navegador.
+
+URL local de teste:
+
+- `http://127.0.0.1:4173`
+- `http://localhost:4173`
+
+Arquivo principal:
+
+- `index.html`
+
+Arquivos criados/alterados:
+
+- `index.html`: estrutura da interface.
+- `styles.css`: layout responsivo e visual.
+- `app.js`: base alimentar, cálculos, regras e interação.
+- `manifest.webmanifest`: configuração PWA.
+- `sw.js`: service worker e cache offline.
+- `server.js`: servidor local simples para testar como PWA.
+- `icons/icon.svg`: ícone fonte.
+- `icons/icon-192.png`: ícone PWA 192px.
+- `icons/icon-512.png`: ícone PWA 512px.
+
+Imagens de validação geradas:
+
+- `fitarm-preview.png`
+- `fitarm-mobile-preview.png`
+- `test-desktop.png`
+- `test-mobile.png`
+- `pwa-mobile-test.png`
+- `pwa-offline-test.png`
+
+## Como rodar
+
+Dentro de `D:\OneDrive\Apps\FitARM`, executar:
+
+```powershell
+& 'C:\Users\Anderson\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe' server.js
+```
+
+Depois abrir:
+
+```text
+http://127.0.0.1:4173
+```
+
+Observação importante:
+
+- Abrir via `file:///D:/OneDrive/Apps/FitARM/index.html` funciona para testar a tela.
+- Para PWA, instalação e offline, precisa abrir por HTTP local ou HTTPS. Use `http://127.0.0.1:4173`.
+
+## PWA
+
+Implementado:
+
+- `manifest.webmanifest`;
+- `theme-color`;
+- ícones 192 e 512;
+- `display: standalone`;
+- service worker;
+- cache offline do app shell;
+- botão "Instalar app" quando o navegador dispara `beforeinstallprompt`;
+- status Online/Offline na interface.
+
+Cache atual do service worker:
+
+- `fitarm-pwa-v1`
+
+Arquivos cacheados:
+
+- `./`
+- `./index.html`
+- `./styles.css`
+- `./app.js`
+- `./manifest.webmanifest`
+- `./icons/icon-192.png`
+- `./icons/icon-512.png`
+
+Validação já feita:
+
+- manifest carregou;
+- service worker registrou;
+- cache foi criado;
+- app abriu offline após cache;
+- sem erros de console no teste automatizado.
+
+## Lógica nutricional implementada
+
+### Taxa basal e meta calórica
+
+O app usa Harris-Benedict, conforme a base científica enviada.
+
+Homem:
+
+```text
+TMB = 66 + (13,7 x kg) + (5 x cm) - (6,8 x idade)
+```
+
+Mulher:
+
+```text
+TMB = 655 + (9,6 x kg) + (1,8 x cm) - (4,7 x idade)
+```
+
+GET:
+
+```text
+GET = TMB x fator de atividade
+```
+
+Fatores:
+
+- sedentário: 1,2;
+- leve: 1,375;
+- moderado: 1,55;
+- muito ativo: 1,725;
+- atleta: 1,9.
+
+Estratégias calóricas disponíveis:
+
+- déficit 10% da TMB;
+- déficit 15% do GET;
+- déficit 300 kcal;
+- déficit 500 kcal;
+- superávit 300 kcal;
+- usar meta manual.
+
+Padrão inicial:
+
+- 5 refeições por dia.
+- Estratégia inicial: déficit de 10% da TMB.
+
+Nota conceitual:
+
+- A ideia de 5 refeições é usada para organização, saciedade, distribuição de proteína e controle glicêmico.
+- Não deve ser apresentada como promessa forte de "acelerar metabolismo".
+
+### Proteína
+
+Faixa atual:
+
+- ganho de massa: 2,0 a 2,2 g/kg;
+- perda de gordura: 1,6 a 2,2 g/kg;
+- manutenção: 1,2 a 1,6 g/kg.
+
+Exemplo validado:
+
+- 80 kg em ganho de massa = 160 a 176 g/dia.
+
+### Carga glicêmica
+
+O app calcula por porção real:
+
+```text
+CG = (IG x carboidratos da porção) / 100
+```
+
+Classificação usada na lógica:
+
+- CG elevada em refeição gera alerta.
+- Para diabetes, CG acima de 30 é crítica.
+- A base do app prioriza carga glicêmica em vez de olhar somente índice glicêmico.
+
+### Preparo dos alimentos
+
+Opções atuais:
+
+- cozido/cru;
+- grelhado/assado;
+- frito;
+- suco/batido;
+- cozido e resfriado.
+
+Efeitos atuais:
+
+- frito aumenta kcal e IG;
+- suco reduz fibra e aumenta impacto glicêmico;
+- cozido e resfriado reduz IG por amido resistente;
+- óleo, açúcar e sal adicionados entram no cálculo.
+
+Conversões:
+
+- óleo: 8,84 kcal/g;
+- açúcar: 4 kcal/g e entra como carboidrato;
+- sal: 393 mg de sódio por grama.
+
+### Sugestão de porção
+
+A sugestão usa:
+
+- calorias restantes do dia;
+- refeições restantes;
+- objetivo;
+- diabetes;
+- grupo alimentar;
+- densidade calórica;
+- limites máximos por grupo.
+
+Limites atuais por grupo sem diabetes:
+
+- carboidrato: 260 g;
+- leguminosa: 220 g;
+- proteína: 240 g;
+- verdura/legume: 300 g;
+- fruta: 200 g;
+- gordura: 25 g.
+
+Limites atuais com diabetes:
+
+- carboidrato: 150 g;
+- leguminosa: 180 g;
+- proteína: 220 g;
+- verdura/legume: 300 g;
+- fruta: 140 g;
+- gordura: 20 g.
+
+Correção feita:
+
+- As gramas automáticas agora são recalculadas enquanto o usuário não editar manualmente.
+- Antes havia um bug em que a sugestão visual podia mudar, mas o registro mantinha valores antigos.
+
+## Alimentos na base inicial
+
+Base inicial no `app.js`, constante `FOODS`.
+
+Grupos:
+
+- cereais/carboidratos;
+- leguminosas;
+- proteínas animais/laticínios;
+- verduras e legumes;
+- frutas;
+- gorduras/óleos/castanhas.
+
+Exemplos:
+
+- arroz branco, integral e parboilizado;
+- feijão carioca e preto;
+- lentilha;
+- grão-de-bico;
+- frango;
+- bife de coxão mole;
+- patinho;
+- tilápia;
+- salmão;
+- ovo;
+- alface;
+- brócolis;
+- tomate;
+- cenoura;
+- maçã;
+- banana;
+- laranja;
+- morango;
+- manga;
+- melancia;
+- abacate;
+- tâmara;
+- passa de uva;
+- azeite;
+- manteiga;
+- amendoim;
+- castanha-do-pará.
+
+## Diabetes e glicemia
+
+Regras e mensagens atuais:
+
+- fruta inteira é preferida ao suco;
+- suco reduz fibra e aumenta impacto glicêmico;
+- tapioca, pão francês, farinha e carboidratos de alto IG recebem alerta;
+- frutas secas como tâmara e passa são marcadas como risco elevado;
+- combinações com proteína, leguminosa e salada são sugeridas;
+- arroz + feijão recebe insight positivo quando ambos aparecem na refeição.
+
+Exemplo de mensagem:
+
+- "Para diabetes, prefira carboidrato com leguminosa, proteína e salada. Fruta inteira é melhor que suco."
+
+## Hipertensão e sódio
+
+Regras atuais:
+
+- o app soma sódio por alimento e sal adicionado;
+- se hipertensão estiver marcada e sódio diário passar de 1600 mg, gera alerta;
+- sódio alto por refeição gera badge.
+
+Mensagem atual:
+
+- evitar embutidos, queijos salgados, temperos prontos e conservas no restante do dia.
+
+## Score metabólico
+
+O score da refeição considera:
+
+- calorias dentro da meta;
+- proteína adequada;
+- fibras;
+- carga glicêmica;
+- sódio;
+- presença de verduras/legumes;
+- fritura ou suco.
+
+Escala atual:
+
+- 0 a 12.
+
+## Validações realizadas
+
+### Sintaxe
+
+Validado com:
+
+```powershell
+node --check app.js
+node --check sw.js
+node --check server.js
+```
+
+Resultado:
+
+- sem erros.
+
+### Fluxo testado: arroz + feijão + bife + alface
+
+Alimentos:
+
+- arroz;
+- feijão;
+- bife de gado;
+- alface.
+
+Resultado após correção:
+
+- sugestão e campos de gramas ficaram alinhados;
+- registro usou as mesmas porções exibidas.
+
+### Fluxo testado: ganho de massa
+
+Perfil:
+
+- 80 kg;
+- 175 cm;
+- 35 anos;
+- homem;
+- atividade moderada.
+
+Resultado:
+
+- TMB: 1799 kcal;
+- GET: 2788 kcal;
+- superávit: +300 kcal;
+- meta: 3090 kcal;
+- proteína: 160 a 176 g.
+
+### Fluxo testado: perda de gordura
+
+Mesmo perfil acima.
+
+Resultado:
+
+- TMB: 1799 kcal;
+- GET: 2788 kcal;
+- déficit 10% TMB: -180 kcal;
+- meta: 2610 kcal;
+- proteína: 128 a 176 g.
+
+### Fluxo testado: diabetes
+
+Alimentos:
+
+- tapioca;
+- laranja em modo suco;
+- ovo.
+
+Resultado:
+
+- alertas de alto impacto glicêmico;
+- alerta de atenção diabetes;
+- sugestão reduzida para carboidratos/frutas.
+
+### PWA/offline
+
+Resultado:
+
+- `manifest.webmanifest` encontrado;
+- `theme-color` encontrado;
+- service worker pronto;
+- cache `fitarm-pwa-v1` criado;
+- app recarregou offline;
+- status mudou para "Offline".
+
+## Decisões de produto
+
+1. Começar como web/PWA antes de Android nativo.
+2. Validar cálculos e experiência antes de APK/AAB.
+3. Manter tudo local por enquanto, sem login e sem backend.
+4. Usar a base científica apresentada como fonte principal.
+5. Não apresentar o app como prescrição médica.
+6. Priorizar carga glicêmica por porção real, não apenas IG.
+7. Manter 5 refeições como padrão inicial.
+8. Usar proteína mais alta para hipertrofia, 2,0 a 2,2 g/kg.
+
+## Próximos passos sugeridos
+
+1. Testar manualmente no navegador por alguns dias.
+2. Melhorar cadastro de alimento personalizado.
+3. Adicionar histórico semanal.
+4. Adicionar exportação CSV/JSON do diário.
+5. Separar a base alimentar em `foods.json`.
+6. Criar tela de onboarding do perfil.
+7. Adicionar metas de carboidrato, gordura e fibra.
+8. Adicionar refeições nomeadas: café, almoço, lanche, jantar, ceia.
+9. Criar modo PWA em celular via rede local.
+10. Empacotar com Capacitor para Android.
+
+## Caminho para Android depois do PWA
+
+Etapas prováveis:
+
+1. Inicializar projeto npm.
+2. Instalar Capacitor.
+3. Configurar `webDir`.
+4. Adicionar plataforma Android.
+5. Gerar APK debug.
+6. Testar em celular.
+7. Gerar AAB para Play Store.
+
+Comandos futuros prováveis:
+
+```powershell
+npm init -y
+npm install @capacitor/core @capacitor/cli
+npx cap init FitARM br.com.fitarm.app
+npx cap add android
+npx cap sync android
+npx cap open android
+```
+
+Ainda não executar publicação Android antes de validar o PWA.
+
+## Observações técnicas
+
+- O projeto ainda não é um repositório Git.
+- Não há `package.json` ainda.
+- O servidor local atual é propositalmente simples.
+- `localStorage` salva:
+  - `fitarm-profile`;
+  - `fitarm-log-YYYY-MM-DD`.
+- O app funciona offline depois que o service worker cacheia os arquivos.
+- PWA precisa de HTTP local/HTTPS; `file://` não registra service worker.
+

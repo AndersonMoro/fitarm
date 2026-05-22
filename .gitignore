@@ -1,0 +1,17 @@
+# Arquivos de teste/preview gerados localmente
+fitarm-preview.png
+fitarm-mobile-preview.png
+test-desktop.png
+test-mobile.png
+pwa-mobile-test.png
+pwa-offline-test.png
+
+# Dependencias e artefatos futuros
+node_modules/
+dist/
+build/
+.capacitor/
+
+# Sistema/editor
+.DS_Store
+Thumbs.db

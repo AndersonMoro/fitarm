@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0f7a5f" />
+    <meta name="description" content="Controle alimentar inteligente com metas calóricas, carga glicêmica, preparo dos alimentos e sugestões de porção." />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="FitARM" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>FitARM - Controle Alimentar Inteligente</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+    <link rel="apple-touch-icon" href="icons/icon-192.png" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">FitARM</p>
+        <h1>Controle alimentar inteligente</h1>
+      </div>
+      <div class="topbar-actions">
+        <button id="installButton" class="install-button" type="button" hidden>Instalar app</button>
+        <div class="today">
+          <span id="todayLabel">Hoje</span>
+          <strong id="calorieBalance">0 kcal restantes</strong>
+          <small id="connectionStatus">Online</small>
+        </div>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="panel profile-panel" aria-labelledby="profileTitle">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Perfil diário</p>
+            <h2 id="profileTitle">Metas e condição clínica</h2>
+          </div>
+          <button id="resetDayButton" class="ghost-button" type="button">Limpar dia</button>
+        </div>
+
+        <form id="profileForm" class="profile-grid">
+          <label>
+            Meta diária manual (kcal)
+            <input id="dailyCalories" type="number" min="900" max="6000" step="10" value="2200" />
+          </label>
+          <label>
+            Peso (kg)
+            <input id="weight" type="number" min="35" max="250" step="0.1" value="80" />
+          </label>
+          <label>
+            Altura (cm)
+            <input id="height" type="number" min="120" max="230" step="1" value="175" />
+          </label>
+          <label>
+            Idade
+            <input id="age" type="number" min="12" max="100" step="1" value="35" />
+          </label>
+          <label>
+            Sexo biológico
+            <select id="sex">
+              <option value="male">Homem</option>
+              <option value="female">Mulher</option>
+            </select>
+          </label>
+          <label>
+            Atividade
+            <select id="activity">
+              <option value="1.2">Sedentário</option>
+              <option value="1.375">Leve</option>
+              <option value="1.55" selected>Moderada</option>
+              <option value="1.725">Muito ativo</option>
+              <option value="1.9">Atleta</option>
+            </select>
+          </label>
+          <label>
+            Objetivo
+            <select id="goal">
+              <option value="loss">Perda de gordura</option>
+              <option value="maintain" selected>Manutenção</option>
+              <option value="gain">Ganho de massa</option>
+            </select>
+          </label>
+          <label>
+            Estratégia calórica
+            <select id="calorieStrategy">
+              <option value="basal10" selected>Déficit 10% da TMB</option>
+              <option value="get15">Déficit 15% do GET</option>
+              <option value="fixed300">Déficit 300 kcal</option>
+              <option value="fixed500">Déficit 500 kcal</option>
+              <option value="surplus300">Superávit 300 kcal</option>
+              <option value="manual">Usar meta manual</option>
+            </select>
+          </label>
+          <label>
+            Refeições restantes hoje
+            <input id="mealsLeft" type="number" min="1" max="8" step="1" value="5" />
+          </label>
+          <div class="toggle-row">
+            <label class="check-label">
+              <input id="diabetes" type="checkbox" />
+              Diabetes / controle glicêmico rigoroso
+            </label>
+            <label class="check-label">
+              <input id="hypertension" type="checkbox" />
+              Hipertensão / atenção ao sódio
+            </label>
+          </div>
+          <button class="primary-button" type="submit">Calcular meta sugerida</button>
+        </form>
+        <div class="formula-card" aria-live="polite">
+          <article>
+            <span>TMB Harris-Benedict</span>
+            <strong id="bmrValue">0 kcal</strong>
+          </article>
+          <article>
+            <span>GET com atividade</span>
+            <strong id="tdeeValue">0 kcal</strong>
+          </article>
+          <article>
+            <span>Déficit / superávit</span>
+            <strong id="adjustmentValue">0 kcal</strong>
+          </article>
+          <article>
+            <span>Proteína alvo</span>
+            <strong id="proteinTargetValue">0 g</strong>
+          </article>
+        </div>
+      </section>
+
+      <section class="metric-strip" aria-label="Resumo do dia">
+        <article>
+          <span>Consumido</span>
+          <strong id="consumedKcal">0 kcal</strong>
+        </article>
+        <article>
+          <span>Restante</span>
+          <strong id="remainingKcal">0 kcal</strong>
+        </article>
+        <article>
+          <span>Proteínas</span>
+          <strong id="proteinTotal">0 g</strong>
+        </article>
+        <article>
+          <span>Fibras</span>
+          <strong id="fiberTotal">0 g</strong>
+        </article>
+        <article>
+          <span>Carga glicêmica</span>
+          <strong id="glycemicLoadTotal">0</strong>
+        </article>
+      </section>
+
+      <section class="workspace">
+        <div id="nova-refeicao" class="panel builder" aria-labelledby="builderTitle">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Nova refeição</p>
+              <h2 id="builderTitle">Diga o que tem para comer</h2>
+            </div>
+          </div>
+
+          <form id="mealForm" class="meal-form">
+            <label>
+              Alimentos disponíveis
+              <input id="foodSearch" list="foodOptions" placeholder="Ex.: arroz, feijão, bife, alface" />
+              <datalist id="foodOptions"></datalist>
+            </label>
+            <div class="form-actions">
+              <button class="secondary-button" id="addFoodButton" type="button">Adicionar alimento</button>
+              <button class="primary-button" type="submit">Registrar refeição</button>
+            </div>
+          </form>
+
+          <div id="selectedFoods" class="selected-foods" aria-live="polite"></div>
+        </div>
+
+        <aside class="panel recommendation" aria-labelledby="recommendationTitle">
+          <p class="eyebrow">Sugestão inteligente</p>
+          <h2 id="recommendationTitle">Quantas gramas comer agora</h2>
+          <div id="portionSuggestion" class="portion-suggestion"></div>
+          <div id="mealScore" class="score-card"></div>
+        </aside>
+      </section>
+
+      <section class="workspace lower">
+        <div class="panel log-panel" aria-labelledby="logTitle">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Diário</p>
+              <h2 id="logTitle">Inserções de hoje</h2>
+            </div>
+          </div>
+          <div id="mealLog" class="meal-log"></div>
+        </div>
+
+        <aside class="panel insight-panel" aria-labelledby="insightTitle">
+          <p class="eyebrow">Metabolismo</p>
+          <h2 id="insightTitle">Alertas e sugestões diárias</h2>
+          <div id="dailyInsights" class="insights"></div>
+        </aside>
+      </section>
+
+      <section class="panel science-panel" aria-labelledby="scienceTitle">
+        <p class="eyebrow">Base técnica aplicada</p>
+        <h2 id="scienceTitle">Por que as recomendações aparecem</h2>
+        <div class="science-grid">
+          <article>
+            <h3>Arroz + feijão</h3>
+            <p>O feijão adiciona fibras e lisina; o arroz complementa com aminoácidos sulfurados. Juntos melhoram perfil proteico e reduzem a velocidade de absorção do carboidrato da refeição.</p>
+          </article>
+          <article>
+            <h3>Carga glicêmica</h3>
+            <p>O app calcula CG por porção real: IG x carboidratos da porção / 100. Para diabetes, refeições com CG acima de 30 recebem alerta.</p>
+          </article>
+          <article>
+            <h3>Preparo importa</h3>
+            <p>Óleo, açúcar, fritura e sucos elevam densidade calórica e impacto glicêmico. Resfriar arroz ou batata pode reduzir resposta glicêmica por aumentar amido resistente.</p>
+          </article>
+          <article>
+            <h3>Fruta inteira</h3>
+            <p>Fruta inteira preserva fibra. Suco concentra carboidrato de várias unidades e acelera a absorção, o que é especialmente importante para quem controla glicemia.</p>
+          </article>
+        </div>
+        <p class="disclaimer">Uso educacional. As sugestões não substituem nutricionista, médico ou orientação individualizada, especialmente em diabetes, doença renal, gestação ou uso de insulina.</p>
+      </section>
+    </main>
+
+    <template id="foodRowTemplate">
+      <article class="food-row">
+        <div class="food-main">
+          <strong class="food-name"></strong>
+          <span class="food-meta"></span>
+        </div>
+        <label>
+          Preparo
+          <select class="prep-select">
+            <option value="cozido">Cozido / cru</option>
+            <option value="grelhado">Grelhado / assado</option>
+            <option value="frito">Frito</option>
+            <option value="suco">Suco / batido</option>
+            <option value="resfriado">Cozido e resfriado</option>
+          </select>
+        </label>
+        <label>
+          Óleo usado (g)
+          <input class="oil-input" type="number" min="0" max="60" step="1" value="0" />
+        </label>
+        <label>
+          Açúcar usado (g)
+          <input class="sugar-input" type="number" min="0" max="80" step="1" value="0" />
+        </label>
+        <label>
+          Sal usado (g)
+          <input class="salt-input" type="number" min="0" max="15" step="0.1" value="0" />
+        </label>
+        <label>
+          Gramas comidas
+          <input class="grams-input" type="number" min="0" max="1200" step="5" />
+        </label>
+        <button class="icon-button remove-food" type="button" aria-label="Remover">x</button>
+      </article>
+    </template>
+
+    <script src="app.js"></script>
+  </body>
+</html>
