@@ -140,12 +140,57 @@ button {
 }
 
 .profile-panel,
+.auth-panel,
 .builder,
 .recommendation,
 .log-panel,
 .insight-panel,
 .science-panel {
   padding: 20px;
+}
+
+.auth-panel {
+  padding: 16px;
+}
+
+.compact-heading {
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.auth-form {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(160px, 0.8fr) auto;
+  gap: 10px;
+  align-items: end;
+}
+
+.auth-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.cloud-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  border-radius: 999px;
+  padding: 5px 10px;
+  color: var(--green-dark);
+  background: #e2f1ec;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.cloud-status.offline {
+  color: #7a3d00;
+  background: #f8e5c8;
+}
+
+.cloud-status.error {
+  color: #84221d;
+  background: #f8d8d4;
 }
 
 .builder {
@@ -642,6 +687,14 @@ select:focus {
   .profile-grid,
   .formula-card {
     grid-template-columns: 1fr;
+  }
+
+  .auth-form {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-actions {
+    display: grid;
   }
 
   .metric-strip {

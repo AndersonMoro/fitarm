@@ -63,3 +63,20 @@ https://SEU_USUARIO.github.io/fitarm/
 
 PWA exige HTTPS ou localhost. GitHub Pages usa HTTPS, entao e adequado para testar instalacao no Android.
 
+## Supabase
+
+O app tem integracao opcional com Supabase Auth e Postgres.
+
+Arquivos:
+
+- `supabase_schema.sql`: tabelas e politicas RLS para executar no SQL Editor.
+- `app.js`: usa `SUPABASE_URL` e `SUPABASE_PUBLISHABLE_KEY`.
+
+Antes de testar login/sync:
+
+1. Abrir Supabase > SQL Editor.
+2. Executar `supabase_schema.sql`.
+3. Conferir se Auth por e-mail/senha esta habilitado.
+4. Abrir o app e criar conta/entrar.
+
+O app continua funcionando localmente via `localStorage` se o Supabase estiver indisponivel.

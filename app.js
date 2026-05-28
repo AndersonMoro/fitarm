@@ -92,7 +92,11 @@ const SCIENCE_FACTS = [
   }
 ];
 
+const SUPABASE_URL = "https://ruufjzigcimqlmknscbm.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_SoJw2pLroI_vJNqBUzqhbw_im7ESsgI";
+
 let deferredInstallPrompt = null;
+let supabaseClient = null;
 
 const state = {
   profile: JSON.parse(localStorage.getItem("fitarm-profile") || "null") || {
@@ -111,6 +115,8 @@ const state = {
   selected: [],
   pendingCandidates: [],
   editingLogIndex: null,
+  user: null,
+  cloudReady: false,
   log: JSON.parse(localStorage.getItem(storageKey()) || "[]")
 };
 
@@ -141,6 +147,13 @@ const els = {
   proteinTargetValue: document.querySelector("#proteinTargetValue"),
   installButton: document.querySelector("#installButton"),
   connectionStatus: document.querySelector("#connectionStatus"),
+  cloudStatus: document.querySelector("#cloudStatus"),
+  authForm: document.querySelector("#authForm"),
+  authEmail: document.querySelector("#authEmail"),
+  authPassword: document.querySelector("#authPassword"),
+  signInButton: document.querySelector("#signInButton"),
+  signUpButton: document.querySelector("#signUpButton"),
+  signOutButton: document.querySelector("#signOutButton"),
   profileForm: document.querySelector("#profileForm"),
   chatLog: document.querySelector("#chatLog"),
   foodTypeChoices: document.querySelector("#foodTypeChoices"),
@@ -160,6 +173,10 @@ const els = {
 
 function storageKey() {
   return `fitarm-log-${new Date().toISOString().slice(0, 10)}`;
+}
+
+function todayKey() {
+  return new Date().toISOString().slice(0, 10);
 }
 
 function normalize(value) {
@@ -292,6 +309,40 @@ function readProfile() {
     hypertension: els.hypertension.checked
   };
   localStorage.setItem("fitarm-profile", JSON.stringify(state.profile));
+}
+
+function profilePayload() {
+  return {
+    id: state.user.id,
+    daily_calories: state.profile.dailyCalories,
+    weight: state.profile.weight,
+    height: state.profile.height,
+    age: state.profile.age,
+    sex: state.profile.sex,
+    activity: state.profile.activity,
+    goal: state.profile.goal,
+    calorie_strategy: state.profile.calorieStrategy,
+    meals_left: state.profile.mealsLeft,
+    diabetes: state.profile.diabetes,
+    hypertension: state.profile.hypertension,
+    updated_at: new Date().toISOString()
+  };
+}
+
+function profileFromRow(row) {
+  return {
+    dailyCalories: Number(row.daily_calories || state.profile.dailyCalories),
+    weight: Number(row.weight || state.profile.weight),
+    height: Number(row.height || state.profile.height),
+    age: Number(row.age || state.profile.age),
+    sex: row.sex || state.profile.sex,
+    activity: Number(row.activity || state.profile.activity),
+    goal: row.goal || state.profile.goal,
+    calorieStrategy: row.calorie_strategy || state.profile.calorieStrategy,
+    mealsLeft: Number(row.meals_left || state.profile.mealsLeft),
+    diabetes: Boolean(row.diabetes),
+    hypertension: Boolean(row.hypertension)
+  };
 }
 
 function hydrateProfile() {
@@ -504,6 +555,35 @@ function persistLog() {
   localStorage.setItem(storageKey(), JSON.stringify(state.log));
 }
 
+function mealFromCloud(row) {
+  const items = (row.meal_items || [])
+    .sort((a, b) => a.sort_order - b.sort_order)
+    .map((item) => ({
+      food: item.food_snapshot,
+      prep: item.prep,
+      oil: Number(item.oil || 0),
+      sugar: Number(item.sugar || 0),
+      salt: Number(item.salt || 0),
+      grams: Number(item.grams || 0),
+      autoGrams: false
+    }));
+
+  return {
+    cloud_id: row.id,
+    label: row.label,
+    time: row.display_time,
+    items,
+    kcal: Number(row.kcal || 0),
+    carbs: Number(row.carbs || 0),
+    protein: Number(row.protein || 0),
+    fat: Number(row.fat || 0),
+    fiber: Number(row.fiber || 0),
+    sodium: Number(row.sodium || 0),
+    gl: Number(row.glycemic_load || 0),
+    flags: row.flags || []
+  };
+}
+
 function renderLog() {
   els.mealLog.innerHTML = "";
   if (!state.log.length) {
@@ -548,6 +628,7 @@ function deleteLoggedMeal(index) {
   if (!meal) return;
   state.log.splice(index, 1);
   persistLog();
+  deleteCloudMeal(meal);
   appendChat("Refeição excluída do diário.", "bot");
   renderAll();
 }
@@ -602,6 +683,177 @@ function renderAll() {
 function renderConnectionStatus() {
   if (!els.connectionStatus) return;
   els.connectionStatus.textContent = navigator.onLine ? "Online" : "Offline";
+}
+
+function setCloudStatus(text, type = "ok") {
+  if (!els.cloudStatus) return;
+  els.cloudStatus.textContent = text;
+  els.cloudStatus.className = `cloud-status ${type === "ok" ? "" : type}`.trim();
+}
+
+function renderAuthState() {
+  const logged = Boolean(state.user);
+  els.signOutButton.hidden = !logged;
+  els.signInButton.hidden = logged;
+  els.signUpButton.hidden = logged;
+  els.authPassword.hidden = logged;
+  els.authEmail.value = state.user?.email || els.authEmail.value;
+  els.authEmail.disabled = logged;
+  setCloudStatus(logged ? "Sincronizado" : (state.cloudReady ? "Local" : "Local/offline"), state.cloudReady ? "ok" : "offline");
+}
+
+function initSupabase() {
+  if (!window.supabase?.createClient) {
+    state.cloudReady = false;
+    renderAuthState();
+    return;
+  }
+
+  supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+  state.cloudReady = true;
+
+  supabaseClient.auth.getSession().then(({ data }) => {
+    state.user = data.session?.user || null;
+    renderAuthState();
+    if (state.user) syncAfterLogin();
+  });
+
+  supabaseClient.auth.onAuthStateChange((_event, session) => {
+    state.user = session?.user || null;
+    renderAuthState();
+    if (state.user) syncAfterLogin();
+  });
+}
+
+async function signIn() {
+  if (!supabaseClient) return setCloudStatus("Supabase indisponível", "error");
+  const email = els.authEmail.value.trim();
+  const password = els.authPassword.value;
+  const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+  if (error) {
+    setCloudStatus("Erro ao entrar", "error");
+    appendBotChatDelayed(error.message);
+  }
+}
+
+async function signUp() {
+  if (!supabaseClient) return setCloudStatus("Supabase indisponível", "error");
+  const email = els.authEmail.value.trim();
+  const password = els.authPassword.value;
+  const { error } = await supabaseClient.auth.signUp({ email, password });
+  if (error) {
+    setCloudStatus("Erro ao criar conta", "error");
+    appendBotChatDelayed(error.message);
+    return;
+  }
+  appendBotChatDelayed("Conta criada. Se o Supabase pedir confirmação por e-mail, confirme antes de entrar.");
+}
+
+async function signOut() {
+  if (!supabaseClient) return;
+  await supabaseClient.auth.signOut();
+  state.user = null;
+  renderAuthState();
+}
+
+async function syncAfterLogin() {
+  await saveProfileCloud();
+  await uploadLocalMealsCloud();
+  await loadCloudProfile();
+  await loadCloudMeals();
+  renderAll();
+}
+
+async function saveProfileCloud() {
+  if (!supabaseClient || !state.user) return;
+  const { error } = await supabaseClient.from("profiles").upsert(profilePayload());
+  if (error) setCloudStatus("Erro perfil", "error");
+}
+
+async function loadCloudProfile() {
+  if (!supabaseClient || !state.user) return;
+  const { data, error } = await supabaseClient.from("profiles").select("*").eq("id", state.user.id).maybeSingle();
+  if (error || !data) return;
+  state.profile = profileFromRow(data);
+  localStorage.setItem("fitarm-profile", JSON.stringify(state.profile));
+  hydrateProfile();
+}
+
+async function uploadLocalMealsCloud() {
+  if (!supabaseClient || !state.user) return;
+  for (const meal of state.log.filter((item) => !item.cloud_id)) {
+    await saveMealCloud(meal);
+  }
+}
+
+async function loadCloudMeals() {
+  if (!supabaseClient || !state.user) return;
+  const { data, error } = await supabaseClient
+    .from("meals")
+    .select("*, meal_items(*)")
+    .eq("meal_date", todayKey())
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    setCloudStatus("Erro diário", "error");
+    return;
+  }
+
+  if (data?.length) {
+    state.log = data.map(mealFromCloud);
+    persistLog();
+  }
+}
+
+async function saveMealCloud(meal) {
+  if (!supabaseClient || !state.user) return;
+  const mealPayload = {
+    user_id: state.user.id,
+    meal_date: todayKey(),
+    label: meal.label,
+    display_time: meal.time,
+    kcal: meal.kcal,
+    carbs: meal.carbs,
+    protein: meal.protein,
+    fat: meal.fat,
+    fiber: meal.fiber,
+    sodium: meal.sodium,
+    glycemic_load: meal.gl,
+    flags: meal.flags
+  };
+
+  const { data, error } = await supabaseClient.from("meals").insert(mealPayload).select("id").single();
+  if (error) {
+    setCloudStatus("Erro ao salvar", "error");
+    return;
+  }
+
+  meal.cloud_id = data.id;
+  const items = (meal.items || []).map((item, index) => ({
+    meal_id: data.id,
+    user_id: state.user.id,
+    sort_order: index,
+    food_name: item.food.name,
+    food_group: item.food.group,
+    prep: item.prep,
+    grams: item.grams,
+    oil: item.oil,
+    sugar: item.sugar,
+    salt: item.salt,
+    food_snapshot: item.food
+  }));
+
+  if (items.length) {
+    const { error: itemError } = await supabaseClient.from("meal_items").insert(items);
+    if (itemError) setCloudStatus("Erro itens", "error");
+  }
+  persistLog();
+}
+
+async function deleteCloudMeal(meal) {
+  if (!supabaseClient || !state.user || !meal?.cloud_id) return;
+  const { error } = await supabaseClient.from("meals").delete().eq("id", meal.cloud_id);
+  if (error) setCloudStatus("Erro excluir", "error");
 }
 
 function appendChat(text, type = "bot") {
@@ -739,6 +991,7 @@ function registerMeal(event) {
   state.selected = [];
   state.editingLogIndex = null;
   persistLog();
+  saveMealCloud(state.log[state.log.length - 1]);
   appendChat("Refeição registrada no diário.", "bot");
   renderSelected();
   renderAll();
@@ -764,6 +1017,7 @@ els.profileForm.addEventListener("submit", (event) => {
   state.profile.dailyCalories = Math.round(suggestedCalories(state.profile) / 10) * 10;
   els.dailyCalories.value = state.profile.dailyCalories;
   localStorage.setItem("fitarm-profile", JSON.stringify(state.profile));
+  saveProfileCloud();
   renderSelected();
   renderAll();
 });
@@ -784,6 +1038,13 @@ els.goal.addEventListener("change", () => {
 });
 
 els.addFoodButton.addEventListener("click", addFoodFromInput);
+els.signInButton.addEventListener("click", signIn);
+els.signUpButton.addEventListener("click", signUp);
+els.signOutButton.addEventListener("click", signOut);
+els.authForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  signIn();
+});
 els.foodSearch.addEventListener("keydown", (event) => {
   if (event.key === "Enter") {
     event.preventDefault();
@@ -802,6 +1063,7 @@ window.addEventListener("offline", renderConnectionStatus);
 
 registerServiceWorker();
 setupInstallPrompt();
+initSupabase();
 hydrateProfile();
 initOptions();
 renderScienceFact();

@@ -9,6 +9,7 @@ test-chat-desktop.png
 test-chat-mobile.png
 test-mobile-layout-latest.png
 test-diary-actions.png
+test-supabase-fallback.png
 
 # Dependencias e artefatos futuros
 node_modules/

@@ -49,6 +49,8 @@ Tipo atual:
 - Interface reorganizada para priorizar o fluxo de nova refeicao.
 - Cadastro de perfil/metas separado em area propria.
 - Nova refeicao funciona como uma conversa guiada.
+- Integracao opcional com Supabase Auth e Postgres foi preparada.
+- Se o usuario nao estiver logado, o app continua funcionando localmente.
 
 URL local de teste:
 
@@ -67,6 +69,7 @@ Arquivos criados/alterados:
 - `manifest.webmanifest`: configuração PWA.
 - `sw.js`: service worker e cache offline.
 - `server.js`: servidor local simples para testar como PWA.
+- `supabase_schema.sql`: tabelas e politicas RLS para Supabase.
 - `icons/icon.svg`: ícone fonte.
 - `icons/icon-192.png`: ícone PWA 192px.
 - `icons/icon-512.png`: ícone PWA 512px.
@@ -114,7 +117,7 @@ Implementado:
 
 Cache atual do service worker:
 
-- `fitarm-pwa-v2`
+- `fitarm-pwa-v6`
 
 Arquivos cacheados:
 
@@ -463,7 +466,7 @@ Resultado:
 - `manifest.webmanifest` encontrado;
 - `theme-color` encontrado;
 - service worker pronto;
-- cache `fitarm-pwa-v1` criado;
+- cache criado no service worker;
 - app recarregou offline;
 - status mudou para "Offline".
 
@@ -477,6 +480,32 @@ Resultado:
 6. Priorizar carga glicêmica por porção real, não apenas IG.
 7. Manter 5 refeições como padrão inicial.
 8. Usar proteína mais alta para hipertrofia, 2,0 a 2,2 g/kg.
+9. Supabase sera usado como backend do MVP, com fallback local.
+10. A publishable key do Supabase fica no frontend; seguranca depende de RLS.
+
+## Supabase MVP
+
+Projeto informado:
+
+- URL base: `https://ruufjzigcimqlmknscbm.supabase.co`
+- Chave publica: `sb_publishable_...`
+
+Arquitetura:
+
+- Supabase Auth para login/cadastro.
+- `profiles` para perfil, metas e condicoes clinicas.
+- `meals` para refeicoes registradas.
+- `meal_items` para itens de cada refeicao.
+- RLS por `auth.uid()` em todas as tabelas.
+
+O app:
+
+- mostra painel "Conta / Sincronizacao Supabase";
+- permite criar conta, entrar e sair;
+- salva perfil no Supabase ao calcular meta;
+- salva refeicoes no Supabase ao registrar;
+- carrega refeicoes do dia quando o usuario entra;
+- continua usando localStorage quando offline/sem login.
 
 ## Próximos passos sugeridos
 
