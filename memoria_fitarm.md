@@ -555,3 +555,16 @@ Ainda não executar publicação Android antes de validar o PWA.
   - `fitarm-log-YYYY-MM-DD`.
 - O app funciona offline depois que o service worker cacheia os arquivos.
 - PWA precisa de HTTP local/HTTPS; `file://` não registra service worker.
+
+## Modularizacao inicial
+
+Criado em 2026-05-28:
+
+- Projeto ja esta em Git/GitHub: `AndersonMoro/fitarm`.
+- `modules/config.js`: URL/chave publica do Supabase e versao de cache PWA.
+- `modules/utils.js`: funcoes compartilhadas de data, normalizacao e arredondamento.
+- `modules/science.js`: cards tecnicos exibidos de forma rotativa.
+- `app.js` virou ES module e importa os modulos acima.
+- `index.html` passou a carregar `app.js` com `type="module"`.
+- `sw.js` cacheia os arquivos de modulo na versao `fitarm-pwa-v7`.
+- Interface ganhou navegacao por areas: Refeicao, Diario, Cadastro e Base tecnica.

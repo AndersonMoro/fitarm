@@ -1,9 +1,12 @@
-const CACHE_NAME = "fitarm-pwa-v6";
+const CACHE_NAME = "fitarm-pwa-v7";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./styles.css",
   "./app.js",
+  "./modules/config.js",
+  "./modules/science.js",
+  "./modules/utils.js",
   "./manifest.webmanifest",
   "./icons/icon-192.png",
   "./icons/icon-512.png"

@@ -1,3 +1,7 @@
+import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "./modules/config.js";
+import { SCIENCE_FACTS } from "./modules/science.js";
+import { normalize, round, storageKey, todayKey } from "./modules/utils.js";
+
 const FOODS = [
   { name: "Arroz branco cozido", aliases: ["arroz", "arroz branco"], group: "carb", kcal: 128, carbs: 28.1, protein: 2.5, fat: 0.2, fiber: 1.6, gi: 64, sodium: 1 },
   { name: "Arroz integral cozido", aliases: ["arroz integral"], group: "carb", kcal: 124, carbs: 25.8, protein: 2.6, fat: 1.0, fiber: 2.7, gi: 55, sodium: 1 },
@@ -69,31 +73,6 @@ const PREP = {
   resfriado: { kcal: 1, gi: 0.88, label: "cozido e resfriado" }
 };
 
-const SCIENCE_FACTS = [
-  {
-    title: "Arroz + feijão",
-    text: "O feijão adiciona fibras e lisina; o arroz complementa com aminoácidos sulfurados. Juntos melhoram perfil proteico e reduzem a velocidade de absorção do carboidrato da refeição."
-  },
-  {
-    title: "Carga glicêmica",
-    text: "O app calcula CG por porção real: IG x carboidratos da porção / 100. Para diabetes, refeições com CG acima de 30 recebem alerta."
-  },
-  {
-    title: "Preparo importa",
-    text: "Óleo, açúcar, fritura e sucos elevam densidade calórica e impacto glicêmico. Resfriar arroz ou batata pode reduzir resposta glicêmica por aumentar amido resistente."
-  },
-  {
-    title: "Fruta inteira",
-    text: "Fruta inteira preserva fibra. Suco concentra carboidrato de várias unidades e acelera a absorção, o que é especialmente importante para quem controla glicemia."
-  },
-  {
-    title: "Proteína distribuída",
-    text: "Para ganho de massa, distribuir proteína ao longo do dia costuma facilitar a meta diária e melhora a qualidade prática das refeições."
-  }
-];
-
-const SUPABASE_URL = "https://ruufjzigcimqlmknscbm.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_SoJw2pLroI_vJNqBUzqhbw_im7ESsgI";
 
 let deferredInstallPrompt = null;
 let supabaseClient = null;
@@ -171,18 +150,6 @@ const els = {
   template: document.querySelector("#foodRowTemplate")
 };
 
-function storageKey() {
-  return `fitarm-log-${new Date().toISOString().slice(0, 10)}`;
-}
-
-function todayKey() {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function normalize(value) {
-  return value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-}
-
 function findFood(query) {
   const clean = normalize(query);
   return FOODS.find((food) => normalize(food.name) === clean || food.aliases.some((alias) => normalize(alias) === clean))
@@ -199,11 +166,6 @@ function findFoodCandidates(query) {
   });
 
   return [...new Map(candidates.map((food) => [food.name, food])).values()].slice(0, 6);
-}
-
-function round(value, digits = 0) {
-  const factor = 10 ** digits;
-  return Math.round((value + Number.EPSILON) * factor) / factor;
 }
 
 function bmr(profile) {

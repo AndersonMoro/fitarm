@@ -33,6 +33,25 @@
     </header>
 
     <main class="layout">
+      <nav class="module-nav" aria-label="Módulos do app">
+        <a href="#nova-refeicao">
+          <span>Refeição</span>
+          <strong>Conversar</strong>
+        </a>
+        <a href="#diario">
+          <span>Diário</span>
+          <strong>Hoje</strong>
+        </a>
+        <a href="#cadastro">
+          <span>Cadastro</span>
+          <strong>Perfil</strong>
+        </a>
+        <a href="#base-tecnica">
+          <span>Base</span>
+          <strong>Ciência</strong>
+        </a>
+      </nav>
+
       <section class="panel auth-panel" aria-labelledby="authTitle">
         <div class="section-heading compact-heading">
           <div>
@@ -111,7 +130,7 @@
       </section>
 
       <section class="workspace lower">
-        <div class="panel log-panel" aria-labelledby="logTitle">
+        <div id="diario" class="panel log-panel" aria-labelledby="logTitle">
           <div class="section-heading">
             <div>
               <p class="eyebrow">Diário</p>
@@ -226,7 +245,7 @@
         </div>
       </section>
 
-      <section class="panel science-panel" aria-labelledby="scienceTitle">
+      <section id="base-tecnica" class="panel science-panel" aria-labelledby="scienceTitle">
         <p class="eyebrow">Base técnica aplicada</p>
         <h2 id="scienceTitle">Um ponto técnico por vez</h2>
         <details class="science-card">
@@ -277,6 +296,6 @@
     </template>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="app.js"></script>
+    <script type="module" src="app.js"></script>
   </body>
 </html>
