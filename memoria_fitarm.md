@@ -2,6 +2,8 @@
 
 Atualizado em: 2026-05-21
 
+Atualizacao de UX em: 2026-05-28
+
 ## Objetivo do app
 
 FitARM é uma aplicação de controle alimentar inteligente. O usuário informa o que tem para comer, como o alimento foi preparado e o app sugere quantas gramas consumir de cada item conforme meta calórica, objetivo, perfil clínico e impacto metabólico.
@@ -44,6 +46,9 @@ Tipo atual:
 - PWA instalável.
 - Sem backend.
 - Dados persistidos no `localStorage` do navegador.
+- Interface reorganizada para priorizar o fluxo de nova refeicao.
+- Cadastro de perfil/metas separado em area propria.
+- Nova refeicao funciona como uma conversa guiada.
 
 URL local de teste:
 
@@ -109,7 +114,7 @@ Implementado:
 
 Cache atual do service worker:
 
-- `fitarm-pwa-v1`
+- `fitarm-pwa-v2`
 
 Arquivos cacheados:
 
@@ -263,6 +268,22 @@ Correção feita:
 
 - As gramas automáticas agora são recalculadas enquanto o usuário não editar manualmente.
 - Antes havia um bug em que a sugestão visual podia mudar, mas o registro mantinha valores antigos.
+- A sugestao de gramas agora aparece tambem dentro do card do alimento, antes do campo de gramas.
+
+## UX atual
+
+Mudancas implementadas em 2026-05-28:
+
+- A area principal agora inicia em "Nova refeicao".
+- O antigo bloco de peso, altura, idade e metas saiu do topo e foi para uma area "Cadastro".
+- A area de cadastro fica pronta para no futuro virar onboarding do primeiro acesso quando houver login.
+- Os cards de resumo do dia foram redesenhados e aparecem logo abaixo da montagem da refeicao.
+- A inclusao de alimentos agora usa um fluxo parecido com troca de mensagens.
+- O app pergunta o que tem na refeicao e o usuario responde no campo de texto.
+- Se o usuario digitar algo generico, como "arroz", o app oferece opcoes como arroz branco, integral e parboilizado.
+- Depois que o alimento e escolhido, o app abre um card com preparo, oleo, acucar, sal, gramas e sugestao inicial.
+- A base tecnica foi compactada para um unico card expansivel.
+- O card da base tecnica exibe um ponto tecnico por vez, variando conforme o dia.
 
 ## Alimentos na base inicial
 
@@ -494,4 +515,3 @@ Ainda não executar publicação Android antes de validar o PWA.
   - `fitarm-log-YYYY-MM-DD`.
 - O app funciona offline depois que o service worker cacheia os arquivos.
 - PWA precisa de HTTP local/HTTPS; `file://` não registra service worker.
-

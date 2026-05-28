@@ -98,6 +98,20 @@ button {
   font-weight: 900;
 }
 
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 42px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 8px;
+  padding: 9px 13px;
+  color: white;
+  font-size: 14px;
+  font-weight: 900;
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.12);
+}
+
 .today span,
 .metric-strip span {
   display: block;
@@ -257,19 +271,39 @@ select:focus {
 
 .metric-strip {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  grid-column: 1 / 2;
+}
+
+.metric-strip article:first-child {
+  grid-column: 1 / -1;
 }
 
 .metric-strip article {
-  min-height: 94px;
-  padding: 16px;
+  position: relative;
+  min-height: 96px;
+  overflow: hidden;
+  padding: 17px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: white;
+  box-shadow: var(--shadow);
+}
+
+.metric-strip article::after {
+  content: "";
+  position: absolute;
+  right: -26px;
+  bottom: -30px;
+  width: 92px;
+  height: 92px;
+  border-radius: 999px;
+  background: rgba(15, 122, 95, 0.1);
 }
 
 .metric-strip strong {
+  position: relative;
   display: block;
   margin-top: 8px;
   font-size: clamp(22px, 3vw, 30px);
@@ -288,6 +322,57 @@ select:focus {
   gap: 12px;
 }
 
+.chat-log {
+  display: grid;
+  gap: 10px;
+  min-height: 86px;
+  max-height: 240px;
+  overflow: auto;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #f4faf7;
+}
+
+.chat-bubble {
+  width: fit-content;
+  max-width: min(76%, 560px);
+  padding: 10px 12px;
+  border-radius: 8px;
+  line-height: 1.35;
+  font-size: 14px;
+}
+
+.chat-bubble.bot {
+  justify-self: start;
+  color: var(--ink);
+  background: white;
+  border: 1px solid var(--line);
+}
+
+.chat-bubble.user {
+  justify-self: end;
+  color: white;
+  background: var(--green);
+}
+
+.choice-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.choice-button {
+  min-height: 38px;
+  border: 1px solid #b6d1c7;
+  border-radius: 999px;
+  padding: 7px 12px;
+  color: var(--green-dark);
+  background: #e7f4ef;
+  font-size: 13px;
+  font-weight: 900;
+}
+
 .form-actions {
   display: flex;
   gap: 10px;
@@ -302,7 +387,7 @@ select:focus {
 
 .food-row {
   display: grid;
-  grid-template-columns: minmax(150px, 1.3fr) repeat(5, minmax(92px, 0.8fr)) 42px;
+  grid-template-columns: minmax(170px, 1.2fr) minmax(180px, 1fr) repeat(5, minmax(92px, 0.8fr)) 42px;
   gap: 10px;
   align-items: end;
   padding: 12px;
@@ -315,6 +400,29 @@ select:focus {
   display: grid;
   gap: 5px;
   align-self: center;
+}
+
+.suggestion-inline {
+  align-self: stretch;
+  padding: 12px;
+  border: 1px solid #b6d1c7;
+  border-radius: 8px;
+  background: #eaf6f1;
+}
+
+.suggestion-inline strong {
+  display: block;
+  color: var(--green-dark);
+  font-size: 22px;
+  line-height: 1;
+}
+
+.suggestion-inline span {
+  display: block;
+  margin-top: 7px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
 }
 
 .food-meta {
@@ -423,23 +531,45 @@ select:focus {
   border-left-color: var(--red);
 }
 
-.science-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.science-grid article {
-  padding: 14px;
+.science-card {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #fbfdfb;
 }
 
-.science-grid p,
+.science-card summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: center;
+  padding: 15px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.science-card summary::-webkit-details-marker {
+  display: none;
+}
+
+.science-card summary span {
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.science-card summary small {
+  color: var(--green-dark);
+  font-weight: 900;
+}
+
+.science-card p,
 .disclaimer {
   color: var(--muted);
   line-height: 1.55;
+}
+
+.science-card p {
+  margin: 0;
+  padding: 0 15px 15px;
 }
 
 .disclaimer {
@@ -457,8 +587,7 @@ select:focus {
 
 @media (max-width: 1120px) {
   .profile-grid,
-  .formula-card,
-  .science-grid {
+  .formula-card {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -466,11 +595,16 @@ select:focus {
     grid-template-columns: 1fr;
   }
 
+  .metric-strip {
+    grid-column: auto;
+  }
+
   .food-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .food-main {
+  .food-main,
+  .suggestion-inline {
     grid-column: 1 / -1;
   }
 }
@@ -492,14 +626,24 @@ select:focus {
   }
 
   .profile-grid,
-  .formula-card,
-  .metric-strip,
-  .science-grid {
+  .formula-card {
+    grid-template-columns: 1fr;
+  }
+
+  .metric-strip {
     grid-template-columns: 1fr;
   }
 
   .food-row {
     grid-template-columns: 1fr;
+  }
+
+  .chat-bubble {
+    max-width: 90%;
+  }
+
+  .form-actions {
+    display: grid;
   }
 
   .icon-button {

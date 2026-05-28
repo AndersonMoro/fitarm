@@ -69,6 +69,29 @@ const PREP = {
   resfriado: { kcal: 1, gi: 0.88, label: "cozido e resfriado" }
 };
 
+const SCIENCE_FACTS = [
+  {
+    title: "Arroz + feijão",
+    text: "O feijão adiciona fibras e lisina; o arroz complementa com aminoácidos sulfurados. Juntos melhoram perfil proteico e reduzem a velocidade de absorção do carboidrato da refeição."
+  },
+  {
+    title: "Carga glicêmica",
+    text: "O app calcula CG por porção real: IG x carboidratos da porção / 100. Para diabetes, refeições com CG acima de 30 recebem alerta."
+  },
+  {
+    title: "Preparo importa",
+    text: "Óleo, açúcar, fritura e sucos elevam densidade calórica e impacto glicêmico. Resfriar arroz ou batata pode reduzir resposta glicêmica por aumentar amido resistente."
+  },
+  {
+    title: "Fruta inteira",
+    text: "Fruta inteira preserva fibra. Suco concentra carboidrato de várias unidades e acelera a absorção, o que é especialmente importante para quem controla glicemia."
+  },
+  {
+    title: "Proteína distribuída",
+    text: "Para ganho de massa, distribuir proteína ao longo do dia costuma facilitar a meta diária e melhora a qualidade prática das refeições."
+  }
+];
+
 let deferredInstallPrompt = null;
 
 const state = {
@@ -86,6 +109,7 @@ const state = {
     hypertension: false
   },
   selected: [],
+  pendingCandidates: [],
   log: JSON.parse(localStorage.getItem(storageKey()) || "[]")
 };
 
@@ -117,6 +141,8 @@ const els = {
   installButton: document.querySelector("#installButton"),
   connectionStatus: document.querySelector("#connectionStatus"),
   profileForm: document.querySelector("#profileForm"),
+  chatLog: document.querySelector("#chatLog"),
+  foodTypeChoices: document.querySelector("#foodTypeChoices"),
   foodSearch: document.querySelector("#foodSearch"),
   foodOptions: document.querySelector("#foodOptions"),
   addFoodButton: document.querySelector("#addFoodButton"),
@@ -127,6 +153,8 @@ const els = {
   mealLog: document.querySelector("#mealLog"),
   dailyInsights: document.querySelector("#dailyInsights"),
   resetDayButton: document.querySelector("#resetDayButton"),
+  scienceFactTitle: document.querySelector("#scienceFactTitle"),
+  scienceFactText: document.querySelector("#scienceFactText"),
   template: document.querySelector("#foodRowTemplate")
 };
 
@@ -142,6 +170,18 @@ function findFood(query) {
   const clean = normalize(query);
   return FOODS.find((food) => normalize(food.name) === clean || food.aliases.some((alias) => normalize(alias) === clean))
     || FOODS.find((food) => normalize(food.name).includes(clean) || food.aliases.some((alias) => normalize(alias).includes(clean)));
+}
+
+function findFoodCandidates(query) {
+  const clean = normalize(query);
+  if (!clean) return [];
+
+  const candidates = FOODS.filter((food) => {
+    const name = normalize(food.name);
+    return name.includes(clean) || food.aliases.some((alias) => normalize(alias).includes(clean) || clean.includes(normalize(alias)));
+  });
+
+  return [...new Map(candidates.map((food) => [food.name, food])).values()].slice(0, 6);
 }
 
 function round(value, digits = 0) {
@@ -363,8 +403,13 @@ function renderSelected() {
   applySuggestedGrams();
   state.selected.forEach((item, index) => {
     const row = els.template.content.firstElementChild.cloneNode(true);
+    const calc = adjusted(item.food, item);
     row.querySelector(".food-name").textContent = item.food.name;
     row.querySelector(".food-meta").textContent = `${item.food.kcal} kcal/100g · IG ${item.food.gi || "n/a"} · ${item.food.fiber}g fibra`;
+    row.querySelector(".suggestion-inline").innerHTML = `
+      <strong>${item.grams || 0}g</strong>
+      <span>Sugestão inicial · ${round(calc.kcal)} kcal · CG ${round(calc.gl, 1)}</span>
+    `;
     row.querySelector(".prep-select").value = item.prep;
     row.querySelector(".oil-input").value = item.oil;
     row.querySelector(".sugar-input").value = item.sugar;
@@ -517,6 +562,48 @@ function renderConnectionStatus() {
   els.connectionStatus.textContent = navigator.onLine ? "Online" : "Offline";
 }
 
+function appendChat(text, type = "bot") {
+  if (!els.chatLog) return;
+  const bubble = document.createElement("div");
+  bubble.className = `chat-bubble ${type}`;
+  bubble.textContent = text;
+  els.chatLog.append(bubble);
+  els.chatLog.scrollTop = els.chatLog.scrollHeight;
+}
+
+function renderCandidateChoices(candidates) {
+  els.foodTypeChoices.innerHTML = "";
+  state.pendingCandidates = candidates;
+
+  candidates.forEach((food, index) => {
+    const button = document.createElement("button");
+    button.className = "choice-button";
+    button.type = "button";
+    button.textContent = food.name;
+    button.addEventListener("click", () => {
+      els.foodTypeChoices.innerHTML = "";
+      state.pendingCandidates = [];
+      addFoodToMeal(food);
+    });
+    els.foodTypeChoices.append(button);
+  });
+}
+
+function addFoodToMeal(food) {
+  state.selected.push({ food, prep: "cozido", oil: 0, sugar: 0, salt: 0, grams: 0, autoGrams: true });
+  appendChat(`${food.name} adicionado. Ajuste preparo, sal, óleo, açúcar e gramas no cartão abaixo.`, "bot");
+  els.foodSearch.value = "";
+  renderSelected();
+  renderAll();
+}
+
+function renderScienceFact() {
+  const daySeed = Math.floor(Date.now() / 86400000);
+  const fact = SCIENCE_FACTS[daySeed % SCIENCE_FACTS.length];
+  els.scienceFactTitle.textContent = fact.title;
+  els.scienceFactText.textContent = fact.text;
+}
+
 function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
   if (!["http:", "https:"].includes(window.location.protocol)) return;
@@ -553,17 +640,29 @@ function setupInstallPrompt() {
 
 function addFoodFromInput() {
   const query = els.foodSearch.value;
-  const food = findFood(query);
-  if (!food) {
+  const candidates = findFoodCandidates(query);
+  appendChat(query || "Adicionar alimento", "user");
+
+  if (!candidates.length) {
+    els.foodTypeChoices.innerHTML = "";
     els.foodSearch.setCustomValidity("Alimento não encontrado na base técnica inicial.");
     els.foodSearch.reportValidity();
+    appendChat("Não encontrei esse alimento na base inicial. Tente outro nome, como arroz branco, feijão, ovo ou alface.", "bot");
     setTimeout(() => els.foodSearch.setCustomValidity(""), 1600);
     return;
   }
-  state.selected.push({ food, prep: "cozido", oil: 0, sugar: 0, salt: 0, grams: 0, autoGrams: true });
-  els.foodSearch.value = "";
-  renderSelected();
-  renderAll();
+
+  const exactFood = candidates.find((food) => normalize(food.name) === normalize(query));
+  if (candidates.length > 1 && !exactFood) {
+    appendChat("Encontrei mais de uma opção. Qual delas você quer usar?", "bot");
+    renderCandidateChoices(candidates);
+    els.foodSearch.value = "";
+    return;
+  }
+
+  els.foodTypeChoices.innerHTML = "";
+  state.pendingCandidates = [];
+  addFoodToMeal(exactFood || candidates[0]);
 }
 
 function registerMeal(event) {
@@ -644,5 +743,6 @@ registerServiceWorker();
 setupInstallPrompt();
 hydrateProfile();
 initOptions();
+renderScienceFact();
 renderSelected();
 renderAll();

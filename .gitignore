@@ -5,6 +5,8 @@ test-desktop.png
 test-mobile.png
 pwa-mobile-test.png
 pwa-offline-test.png
+test-chat-desktop.png
+test-chat-mobile.png
 
 # Dependencias e artefatos futuros
 node_modules/

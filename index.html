@@ -22,6 +22,7 @@
         <h1>Controle alimentar inteligente</h1>
       </div>
       <div class="topbar-actions">
+        <a class="nav-link" href="#cadastro">Cadastro</a>
         <button id="installButton" class="install-button" type="button" hidden>Instalar app</button>
         <div class="today">
           <span id="todayLabel">Hoje</span>
@@ -32,11 +33,88 @@
     </header>
 
     <main class="layout">
-      <section class="panel profile-panel" aria-labelledby="profileTitle">
+      <section class="workspace">
+        <div id="nova-refeicao" class="panel builder" aria-labelledby="builderTitle">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Nova refeição</p>
+              <h2 id="builderTitle">Monte a refeição por conversa</h2>
+            </div>
+          </div>
+
+          <form id="mealForm" class="meal-form">
+            <div id="chatLog" class="chat-log" aria-live="polite">
+              <div class="chat-bubble bot">O que temos para esta refeição?</div>
+            </div>
+            <label>
+              Responder
+              <input id="foodSearch" list="foodOptions" placeholder="Ex.: arroz branco, feijão, bife, alface" autocomplete="off" />
+              <datalist id="foodOptions"></datalist>
+            </label>
+            <div id="foodTypeChoices" class="choice-row" aria-live="polite"></div>
+            <div class="form-actions">
+              <button class="secondary-button" id="addFoodButton" type="button">Enviar alimento</button>
+              <button class="primary-button" type="submit">Registrar refeição</button>
+            </div>
+          </form>
+
+          <div id="selectedFoods" class="selected-foods" aria-live="polite"></div>
+        </div>
+
+        <section class="metric-strip" aria-label="Resumo do dia">
+          <article>
+            <span>Consumido</span>
+            <strong id="consumedKcal">0 kcal</strong>
+          </article>
+          <article>
+            <span>Restante</span>
+            <strong id="remainingKcal">0 kcal</strong>
+          </article>
+          <article>
+            <span>Proteínas</span>
+            <strong id="proteinTotal">0 g</strong>
+          </article>
+          <article>
+            <span>Fibras</span>
+            <strong id="fiberTotal">0 g</strong>
+          </article>
+          <article>
+            <span>Carga glicêmica</span>
+            <strong id="glycemicLoadTotal">0</strong>
+          </article>
+        </section>
+
+        <aside class="panel recommendation" aria-labelledby="recommendationTitle">
+          <p class="eyebrow">Sugestão inteligente</p>
+          <h2 id="recommendationTitle">Quantas gramas comer agora</h2>
+          <div id="portionSuggestion" class="portion-suggestion"></div>
+          <div id="mealScore" class="score-card"></div>
+        </aside>
+      </section>
+
+      <section class="workspace lower">
+        <div class="panel log-panel" aria-labelledby="logTitle">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Diário</p>
+              <h2 id="logTitle">Inserções de hoje</h2>
+            </div>
+          </div>
+          <div id="mealLog" class="meal-log"></div>
+        </div>
+
+        <aside class="panel insight-panel" aria-labelledby="insightTitle">
+          <p class="eyebrow">Metabolismo</p>
+          <h2 id="insightTitle">Alertas e sugestões diárias</h2>
+          <div id="dailyInsights" class="insights"></div>
+        </aside>
+      </section>
+
+      <section id="cadastro" class="panel profile-panel" aria-labelledby="profileTitle">
         <div class="section-heading">
           <div>
-            <p class="eyebrow">Perfil diário</p>
-            <h2 id="profileTitle">Metas e condição clínica</h2>
+            <p class="eyebrow">Cadastro</p>
+            <h2 id="profileTitle">Perfil, metas e condição clínica</h2>
           </div>
           <button id="resetDayButton" class="ghost-button" type="button">Limpar dia</button>
         </div>
@@ -130,100 +208,16 @@
         </div>
       </section>
 
-      <section class="metric-strip" aria-label="Resumo do dia">
-        <article>
-          <span>Consumido</span>
-          <strong id="consumedKcal">0 kcal</strong>
-        </article>
-        <article>
-          <span>Restante</span>
-          <strong id="remainingKcal">0 kcal</strong>
-        </article>
-        <article>
-          <span>Proteínas</span>
-          <strong id="proteinTotal">0 g</strong>
-        </article>
-        <article>
-          <span>Fibras</span>
-          <strong id="fiberTotal">0 g</strong>
-        </article>
-        <article>
-          <span>Carga glicêmica</span>
-          <strong id="glycemicLoadTotal">0</strong>
-        </article>
-      </section>
-
-      <section class="workspace">
-        <div id="nova-refeicao" class="panel builder" aria-labelledby="builderTitle">
-          <div class="section-heading">
-            <div>
-              <p class="eyebrow">Nova refeição</p>
-              <h2 id="builderTitle">Diga o que tem para comer</h2>
-            </div>
-          </div>
-
-          <form id="mealForm" class="meal-form">
-            <label>
-              Alimentos disponíveis
-              <input id="foodSearch" list="foodOptions" placeholder="Ex.: arroz, feijão, bife, alface" />
-              <datalist id="foodOptions"></datalist>
-            </label>
-            <div class="form-actions">
-              <button class="secondary-button" id="addFoodButton" type="button">Adicionar alimento</button>
-              <button class="primary-button" type="submit">Registrar refeição</button>
-            </div>
-          </form>
-
-          <div id="selectedFoods" class="selected-foods" aria-live="polite"></div>
-        </div>
-
-        <aside class="panel recommendation" aria-labelledby="recommendationTitle">
-          <p class="eyebrow">Sugestão inteligente</p>
-          <h2 id="recommendationTitle">Quantas gramas comer agora</h2>
-          <div id="portionSuggestion" class="portion-suggestion"></div>
-          <div id="mealScore" class="score-card"></div>
-        </aside>
-      </section>
-
-      <section class="workspace lower">
-        <div class="panel log-panel" aria-labelledby="logTitle">
-          <div class="section-heading">
-            <div>
-              <p class="eyebrow">Diário</p>
-              <h2 id="logTitle">Inserções de hoje</h2>
-            </div>
-          </div>
-          <div id="mealLog" class="meal-log"></div>
-        </div>
-
-        <aside class="panel insight-panel" aria-labelledby="insightTitle">
-          <p class="eyebrow">Metabolismo</p>
-          <h2 id="insightTitle">Alertas e sugestões diárias</h2>
-          <div id="dailyInsights" class="insights"></div>
-        </aside>
-      </section>
-
       <section class="panel science-panel" aria-labelledby="scienceTitle">
         <p class="eyebrow">Base técnica aplicada</p>
-        <h2 id="scienceTitle">Por que as recomendações aparecem</h2>
-        <div class="science-grid">
-          <article>
-            <h3>Arroz + feijão</h3>
-            <p>O feijão adiciona fibras e lisina; o arroz complementa com aminoácidos sulfurados. Juntos melhoram perfil proteico e reduzem a velocidade de absorção do carboidrato da refeição.</p>
-          </article>
-          <article>
-            <h3>Carga glicêmica</h3>
-            <p>O app calcula CG por porção real: IG x carboidratos da porção / 100. Para diabetes, refeições com CG acima de 30 recebem alerta.</p>
-          </article>
-          <article>
-            <h3>Preparo importa</h3>
-            <p>Óleo, açúcar, fritura e sucos elevam densidade calórica e impacto glicêmico. Resfriar arroz ou batata pode reduzir resposta glicêmica por aumentar amido resistente.</p>
-          </article>
-          <article>
-            <h3>Fruta inteira</h3>
-            <p>Fruta inteira preserva fibra. Suco concentra carboidrato de várias unidades e acelera a absorção, o que é especialmente importante para quem controla glicemia.</p>
-          </article>
-        </div>
+        <h2 id="scienceTitle">Um ponto técnico por vez</h2>
+        <details class="science-card">
+          <summary>
+            <span id="scienceFactTitle">Carga glicêmica</span>
+            <small>Expandir</small>
+          </summary>
+          <p id="scienceFactText">O app calcula CG por porção real: IG x carboidratos da porção / 100. Para diabetes, refeições com CG acima de 30 recebem alerta.</p>
+        </details>
         <p class="disclaimer">Uso educacional. As sugestões não substituem nutricionista, médico ou orientação individualizada, especialmente em diabetes, doença renal, gestação ou uso de insulina.</p>
       </section>
     </main>
@@ -234,6 +228,7 @@
           <strong class="food-name"></strong>
           <span class="food-meta"></span>
         </div>
+        <div class="suggestion-inline"></div>
         <label>
           Preparo
           <select class="prep-select">
