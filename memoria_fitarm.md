@@ -289,6 +289,10 @@ Mudancas implementadas em 2026-05-28:
 - Ajuste de 2026-05-28: botao Registrar refeicao foi movido para abaixo dos cards de preparo.
 - Ajuste de 2026-05-28: cada alimento ganhou acoes Editar e Excluir.
 - Ajuste de 2026-05-28: o painel separado de Sugestao Inteligente foi removido; a sugestao fica no card do alimento antes do preparo.
+- Ajuste de 2026-05-28: Editar e Excluir foram movidos para o card do Diario / Insercoes de hoje.
+- Ajuste de 2026-05-28: ao editar uma refeicao do Diario, ela volta para a area de montagem para ajuste e novo registro.
+- Ajuste de 2026-05-28: sugestao inicial ficou maior, mostrando gramas, kcal e CG com mais destaque.
+- Ajuste de 2026-05-28: fluxo de conversa tenta vibrar em navegadores compativeis usando `navigator.vibrate`.
 
 ## Alimentos na base inicial
 

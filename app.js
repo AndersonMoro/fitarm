@@ -110,6 +110,7 @@ const state = {
   },
   selected: [],
   pendingCandidates: [],
+  editingLogIndex: null,
   log: JSON.parse(localStorage.getItem(storageKey()) || "[]")
 };
 
@@ -362,6 +363,18 @@ function applySuggestedGrams() {
   });
 }
 
+function cloneMealItem(item) {
+  return {
+    food: item.food,
+    prep: item.prep,
+    oil: Number(item.oil || 0),
+    sugar: Number(item.sugar || 0),
+    salt: Number(item.salt || 0),
+    grams: Number(item.grams || 0),
+    autoGrams: item.autoGrams === true
+  };
+}
+
 function badgesFor(item, calc) {
   const badges = [];
   const food = item.food;
@@ -407,7 +420,8 @@ function renderSelected() {
     row.querySelector(".food-meta").textContent = `${item.food.kcal} kcal/100g · IG ${item.food.gi || "n/a"} · ${item.food.fiber}g fibra`;
     row.querySelector(".suggestion-inline").innerHTML = `
       <strong>${item.grams || 0}g</strong>
-      <span>Sugestão inicial · ${round(calc.kcal)} kcal · CG ${round(calc.gl, 1)}</span>
+      <span>Sugestão inicial</span>
+      <span>${round(calc.kcal)} kcal · CG ${round(calc.gl, 1)}</span>
     `;
     row.querySelector(".prep-select").value = item.prep;
     row.querySelector(".oil-input").value = item.oil;
@@ -420,16 +434,6 @@ function renderSelected() {
     row.querySelector(".sugar-input").addEventListener("input", (event) => updateItem(index, "sugar", Number(event.target.value)));
     row.querySelector(".salt-input").addEventListener("input", (event) => updateItem(index, "salt", Number(event.target.value)));
     row.querySelector(".grams-input").addEventListener("input", (event) => updateItem(index, "grams", Number(event.target.value)));
-    row.querySelector(".edit-food").addEventListener("click", () => {
-      row.scrollIntoView({ behavior: "smooth", block: "center" });
-      row.querySelector(".grams-input").focus();
-    });
-    row.querySelector(".remove-food").addEventListener("click", () => {
-      appendChat(`${item.food.name} removido da refeição.`, "bot");
-      state.selected.splice(index, 1);
-      renderSelected();
-      renderAll();
-    });
     els.selectedFoods.append(row);
   });
   renderSuggestions();
@@ -496,6 +500,10 @@ function renderMetrics() {
   els.proteinTargetValue.textContent = `${round(proteinMin)}-${round(proteinMax)} g`;
 }
 
+function persistLog() {
+  localStorage.setItem(storageKey(), JSON.stringify(state.log));
+}
+
 function renderLog() {
   els.mealLog.innerHTML = "";
   if (!state.log.length) {
@@ -503,16 +511,45 @@ function renderLog() {
     return;
   }
 
-  state.log.slice().reverse().forEach((meal) => {
+  state.log.slice().reverse().forEach((meal, reverseIndex) => {
+    const index = state.log.length - 1 - reverseIndex;
     const div = document.createElement("div");
     div.className = "log-item";
     div.innerHTML = `
       <strong>${meal.label}</strong>
       <span class="log-meta">${meal.time} · ${round(meal.kcal)} kcal · ${round(meal.protein, 1)}g proteína · ${round(meal.fiber, 1)}g fibra · CG ${round(meal.gl, 1)}</span>
       <div class="badge-row">${meal.flags.map((flag) => `<span class="badge ${flag.type}">${flag.text}</span>`).join("")}</div>
+      <div class="log-actions">
+        <button class="secondary-button edit-log" type="button">Editar</button>
+        <button class="danger-button delete-log" type="button">Excluir</button>
+      </div>
     `;
+    div.querySelector(".edit-log").addEventListener("click", () => editLoggedMeal(index));
+    div.querySelector(".delete-log").addEventListener("click", () => deleteLoggedMeal(index));
     els.mealLog.append(div);
   });
+}
+
+function editLoggedMeal(index) {
+  const meal = state.log[index];
+  if (!meal || !meal.items) return;
+  state.selected = meal.items.map(cloneMealItem);
+  state.editingLogIndex = index;
+  state.log.splice(index, 1);
+  persistLog();
+  appendChat("Refeição carregada para edição. Ajuste os itens e registre novamente.", "bot");
+  renderSelected();
+  renderAll();
+  document.querySelector("#nova-refeicao").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function deleteLoggedMeal(index) {
+  const meal = state.log[index];
+  if (!meal) return;
+  state.log.splice(index, 1);
+  persistLog();
+  appendChat("Refeição excluída do diário.", "bot");
+  renderAll();
 }
 
 function renderInsights() {
@@ -574,6 +611,13 @@ function appendChat(text, type = "bot") {
   bubble.textContent = text;
   els.chatLog.append(bubble);
   els.chatLog.scrollTop = els.chatLog.scrollHeight;
+  notifyInteraction(type);
+}
+
+function notifyInteraction(type = "bot") {
+  if (!("vibrate" in navigator)) return;
+  const pattern = type === "user" ? 12 : [10, 30, 10];
+  navigator.vibrate(pattern);
 }
 
 function renderCandidateChoices(candidates) {
@@ -679,11 +723,14 @@ function registerMeal(event) {
   state.log.push({
     label: validItems.map((item) => `${item.food.name} ${item.grams}g`).join(" + "),
     time: new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit" }).format(new Date()),
+    items: validItems.map(cloneMealItem),
     ...total,
     flags: uniqueFlags(flags)
   });
   state.selected = [];
-  localStorage.setItem(storageKey(), JSON.stringify(state.log));
+  state.editingLogIndex = null;
+  persistLog();
+  appendChat("Refeição registrada no diário.", "bot");
   renderSelected();
   renderAll();
 }

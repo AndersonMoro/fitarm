@@ -414,31 +414,33 @@ select:focus {
 
 .suggestion-inline {
   align-self: stretch;
-  padding: 12px;
-  border: 1px solid #b6d1c7;
+  padding: 16px;
+  border: 2px solid #9bcbbc;
   border-radius: 8px;
-  background: #eaf6f1;
+  background: linear-gradient(180deg, #e6f5ef, #f7fcfa);
 }
 
 .suggestion-inline strong {
   display: block;
   color: var(--green-dark);
-  font-size: 22px;
+  font-size: clamp(30px, 7vw, 46px);
   line-height: 1;
 }
 
 .suggestion-inline span {
   display: block;
-  margin-top: 7px;
+  margin-top: 9px;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 14px;
+  font-weight: 800;
   line-height: 1.35;
 }
 
-.food-actions {
+.log-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
+  margin-top: 4px;
 }
 
 .food-meta {
@@ -616,8 +618,7 @@ select:focus {
   }
 
   .food-main,
-  .suggestion-inline,
-  .food-actions {
+  .suggestion-inline {
     grid-column: 1 / -1;
   }
 }
