@@ -144,7 +144,6 @@ const els = {
   chatLog: document.querySelector("#chatLog"),
   foodTypeChoices: document.querySelector("#foodTypeChoices"),
   foodSearch: document.querySelector("#foodSearch"),
-  foodOptions: document.querySelector("#foodOptions"),
   addFoodButton: document.querySelector("#addFoodButton"),
   mealForm: document.querySelector("#mealForm"),
   selectedFoods: document.querySelector("#selectedFoods"),
@@ -421,7 +420,12 @@ function renderSelected() {
     row.querySelector(".sugar-input").addEventListener("input", (event) => updateItem(index, "sugar", Number(event.target.value)));
     row.querySelector(".salt-input").addEventListener("input", (event) => updateItem(index, "salt", Number(event.target.value)));
     row.querySelector(".grams-input").addEventListener("input", (event) => updateItem(index, "grams", Number(event.target.value)));
+    row.querySelector(".edit-food").addEventListener("click", () => {
+      row.scrollIntoView({ behavior: "smooth", block: "center" });
+      row.querySelector(".grams-input").focus();
+    });
     row.querySelector(".remove-food").addEventListener("click", () => {
+      appendChat(`${item.food.name} removido da refeição.`, "bot");
       state.selected.splice(index, 1);
       renderSelected();
       renderAll();
@@ -439,6 +443,7 @@ function updateItem(index, field, value) {
 }
 
 function renderSuggestions() {
+  if (!els.portionSuggestion || !els.mealScore) return;
   els.portionSuggestion.innerHTML = "";
   if (!state.selected.length) {
     els.portionSuggestion.innerHTML = '<div class="empty-state">A sugestão aparece depois que você adiciona alimentos.</div>';
@@ -694,7 +699,7 @@ function uniqueFlags(flags) {
 }
 
 function initOptions() {
-  els.foodOptions.innerHTML = FOODS.map((food) => `<option value="${food.name}"></option>`).join("");
+  return true;
 }
 
 els.profileForm.addEventListener("submit", (event) => {

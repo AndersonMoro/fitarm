@@ -284,6 +284,11 @@ Mudancas implementadas em 2026-05-28:
 - Depois que o alimento e escolhido, o app abre um card com preparo, oleo, acucar, sal, gramas e sugestao inicial.
 - A base tecnica foi compactada para um unico card expansivel.
 - O card da base tecnica exibe um ponto tecnico por vez, variando conforme o dia.
+- Ajuste de 2026-05-28: cards de resumo voltaram para o topo, em formato compacto, antes de Nova Refeicao.
+- Ajuste de 2026-05-28: o campo de resposta nao usa mais datalist nativa ao focar; a escolha acontece pela conversa.
+- Ajuste de 2026-05-28: botao Registrar refeicao foi movido para abaixo dos cards de preparo.
+- Ajuste de 2026-05-28: cada alimento ganhou acoes Editar e Excluir.
+- Ajuste de 2026-05-28: o painel separado de Sugestao Inteligente foi removido; a sugestao fica no card do alimento antes do preparo.
 
 ## Alimentos na base inicial
 

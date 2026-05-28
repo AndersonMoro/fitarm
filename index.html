@@ -33,6 +33,29 @@
     </header>
 
     <main class="layout">
+      <section class="metric-strip" aria-label="Resumo do dia">
+        <article>
+          <span>Consumido</span>
+          <strong id="consumedKcal">0 kcal</strong>
+        </article>
+        <article>
+          <span>Restante</span>
+          <strong id="remainingKcal">0 kcal</strong>
+        </article>
+        <article>
+          <span>Proteínas</span>
+          <strong id="proteinTotal">0 g</strong>
+        </article>
+        <article>
+          <span>Fibras</span>
+          <strong id="fiberTotal">0 g</strong>
+        </article>
+        <article>
+          <span>Carga glicêmica</span>
+          <strong id="glycemicLoadTotal">0</strong>
+        </article>
+      </section>
+
       <section class="workspace">
         <div id="nova-refeicao" class="panel builder" aria-labelledby="builderTitle">
           <div class="section-heading">
@@ -48,48 +71,18 @@
             </div>
             <label>
               Responder
-              <input id="foodSearch" list="foodOptions" placeholder="Ex.: arroz branco, feijão, bife, alface" autocomplete="off" />
-              <datalist id="foodOptions"></datalist>
+              <input id="foodSearch" placeholder="Ex.: arroz branco, feijão, bife, alface" autocomplete="off" />
             </label>
             <div id="foodTypeChoices" class="choice-row" aria-live="polite"></div>
             <div class="form-actions">
               <button class="secondary-button" id="addFoodButton" type="button">Enviar alimento</button>
-              <button class="primary-button" type="submit">Registrar refeição</button>
             </div>
           </form>
 
           <div id="selectedFoods" class="selected-foods" aria-live="polite"></div>
+          <button class="primary-button register-meal-button" id="registerMealButton" type="submit" form="mealForm">Registrar refeição</button>
         </div>
 
-        <section class="metric-strip" aria-label="Resumo do dia">
-          <article>
-            <span>Consumido</span>
-            <strong id="consumedKcal">0 kcal</strong>
-          </article>
-          <article>
-            <span>Restante</span>
-            <strong id="remainingKcal">0 kcal</strong>
-          </article>
-          <article>
-            <span>Proteínas</span>
-            <strong id="proteinTotal">0 g</strong>
-          </article>
-          <article>
-            <span>Fibras</span>
-            <strong id="fiberTotal">0 g</strong>
-          </article>
-          <article>
-            <span>Carga glicêmica</span>
-            <strong id="glycemicLoadTotal">0</strong>
-          </article>
-        </section>
-
-        <aside class="panel recommendation" aria-labelledby="recommendationTitle">
-          <p class="eyebrow">Sugestão inteligente</p>
-          <h2 id="recommendationTitle">Quantas gramas comer agora</h2>
-          <div id="portionSuggestion" class="portion-suggestion"></div>
-          <div id="mealScore" class="score-card"></div>
-        </aside>
       </section>
 
       <section class="workspace lower">
@@ -229,6 +222,10 @@
           <span class="food-meta"></span>
         </div>
         <div class="suggestion-inline"></div>
+        <div class="food-actions">
+          <button class="secondary-button edit-food" type="button">Editar</button>
+          <button class="danger-button remove-food" type="button">Excluir</button>
+        </div>
         <label>
           Preparo
           <select class="prep-select">
@@ -255,7 +252,6 @@
           Gramas comidas
           <input class="grams-input" type="number" min="0" max="1200" step="5" />
         </label>
-        <button class="icon-button remove-food" type="button" aria-label="Remover">x</button>
       </article>
     </template>
 

@@ -128,7 +128,7 @@ button {
 
 .layout {
   display: grid;
-  gap: 18px;
+  gap: 14px;
   padding: 22px clamp(14px, 4vw, 48px) 42px;
 }
 
@@ -146,6 +146,10 @@ button {
 .insight-panel,
 .science-panel {
   padding: 20px;
+}
+
+.builder {
+  grid-column: 1 / -1;
 }
 
 .section-heading {
@@ -242,7 +246,8 @@ select:focus {
 .primary-button,
 .secondary-button,
 .ghost-button,
-.icon-button {
+.icon-button,
+.danger-button {
   min-height: 42px;
   border: 0;
   border-radius: 8px;
@@ -269,35 +274,35 @@ select:focus {
   background: #f0f5f2;
 }
 
-.metric-strip {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  grid-column: 1 / 2;
+.danger-button {
+  color: var(--red);
+  background: #f8e8e6;
 }
 
-.metric-strip article:first-child {
-  grid-column: 1 / -1;
+.metric-strip {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
 }
 
 .metric-strip article {
   position: relative;
-  min-height: 96px;
+  min-height: 74px;
   overflow: hidden;
-  padding: 17px;
+  padding: 12px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: white;
-  box-shadow: var(--shadow);
+  box-shadow: 0 8px 20px rgba(24, 42, 38, 0.06);
 }
 
 .metric-strip article::after {
   content: "";
   position: absolute;
-  right: -26px;
-  bottom: -30px;
-  width: 92px;
-  height: 92px;
+  right: -22px;
+  bottom: -28px;
+  width: 68px;
+  height: 68px;
   border-radius: 999px;
   background: rgba(15, 122, 95, 0.1);
 }
@@ -305,8 +310,8 @@ select:focus {
 .metric-strip strong {
   position: relative;
   display: block;
-  margin-top: 8px;
-  font-size: clamp(22px, 3vw, 30px);
+  margin-top: 6px;
+  font-size: clamp(17px, 2vw, 24px);
   line-height: 1;
 }
 
@@ -379,6 +384,11 @@ select:focus {
   flex-wrap: wrap;
 }
 
+.register-meal-button {
+  width: 100%;
+  margin-top: 14px;
+}
+
 .selected-foods {
   display: grid;
   gap: 10px;
@@ -387,7 +397,7 @@ select:focus {
 
 .food-row {
   display: grid;
-  grid-template-columns: minmax(170px, 1.2fr) minmax(180px, 1fr) repeat(5, minmax(92px, 0.8fr)) 42px;
+  grid-template-columns: minmax(170px, 1.1fr) minmax(180px, 0.9fr) minmax(130px, 0.7fr) repeat(5, minmax(92px, 0.8fr));
   gap: 10px;
   align-items: end;
   padding: 12px;
@@ -423,6 +433,12 @@ select:focus {
   color: var(--muted);
   font-size: 12px;
   line-height: 1.35;
+}
+
+.food-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
 }
 
 .food-meta {
@@ -595,16 +611,13 @@ select:focus {
     grid-template-columns: 1fr;
   }
 
-  .metric-strip {
-    grid-column: auto;
-  }
-
   .food-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .food-main,
-  .suggestion-inline {
+  .suggestion-inline,
+  .food-actions {
     grid-column: 1 / -1;
   }
 }
@@ -631,7 +644,15 @@ select:focus {
   }
 
   .metric-strip {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .metric-strip article {
+    min-height: 70px;
+  }
+
+  .metric-strip article:first-child {
+    grid-column: 1 / -1;
   }
 
   .food-row {
@@ -644,6 +665,11 @@ select:focus {
 
   .form-actions {
     display: grid;
+  }
+
+  .register-meal-button {
+    min-height: 52px;
+    font-size: 17px;
   }
 
   .icon-button {
