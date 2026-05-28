@@ -22,7 +22,8 @@
         <h1>Controle alimentar inteligente</h1>
       </div>
       <div class="topbar-actions">
-        <a class="nav-link" href="#cadastro">Cadastro</a>
+        <a class="nav-link" href="#perfil">Perfil</a>
+        <button id="topSignOutButton" class="nav-link top-signout" type="button" hidden>Sair</button>
         <button id="installButton" class="install-button" type="button" hidden>Instalar app</button>
         <div class="today">
           <span id="todayLabel">Hoje</span>
@@ -32,35 +33,14 @@
       </div>
     </header>
 
-    <main class="layout">
-      <nav class="module-nav" aria-label="Módulos do app">
-        <a href="#nova-refeicao">
-          <span>Refeição</span>
-          <strong>Conversar</strong>
-        </a>
-        <a href="#diario">
-          <span>Diário</span>
-          <strong>Hoje</strong>
-        </a>
-        <a href="#cadastro">
-          <span>Cadastro</span>
-          <strong>Perfil</strong>
-        </a>
-        <a href="#base-tecnica">
-          <span>Base</span>
-          <strong>Ciência</strong>
-        </a>
-      </nav>
-
-      <section class="panel auth-panel" aria-labelledby="authTitle">
-        <div class="section-heading compact-heading">
-          <div>
-            <p class="eyebrow">Conta</p>
-            <h2 id="authTitle">Sincronização Supabase</h2>
-          </div>
-          <span id="cloudStatus" class="cloud-status">Local</span>
+    <section id="loginPage" class="login-page" aria-labelledby="loginTitle">
+      <div class="login-card">
+        <div>
+          <p class="eyebrow">Acesso</p>
+          <h2 id="loginTitle">Entre para sincronizar seu diário</h2>
+          <p class="login-copy">Use sua conta Supabase para manter perfil e refeições salvos. Para testes rápidos, também dá para continuar no modo local.</p>
         </div>
-        <form id="authForm" class="auth-form">
+        <form id="authForm" class="auth-form login-form">
           <label>
             E-mail
             <input id="authEmail" type="email" autocomplete="email" placeholder="voce@email.com" />
@@ -72,10 +52,33 @@
           <div class="auth-actions">
             <button id="signInButton" class="primary-button" type="button">Entrar</button>
             <button id="signUpButton" class="secondary-button" type="button">Criar conta</button>
+            <button id="continueLocalButton" class="ghost-button" type="button">Continuar local</button>
             <button id="signOutButton" class="ghost-button" type="button" hidden>Sair</button>
           </div>
+          <span id="cloudStatus" class="cloud-status">Local</span>
         </form>
-      </section>
+      </div>
+    </section>
+
+    <main id="appShell" class="layout" hidden>
+      <nav class="module-nav" aria-label="Módulos do app">
+        <a href="#nova-refeicao">
+          <span>Refeição</span>
+          <strong>Conversar</strong>
+        </a>
+        <a href="#diario">
+          <span>Diário</span>
+          <strong>Hoje</strong>
+        </a>
+        <a href="#perfil">
+          <span>Perfil</span>
+          <strong>Perfil</strong>
+        </a>
+        <a href="#base-tecnica">
+          <span>Base</span>
+          <strong>Ciência</strong>
+        </a>
+      </nav>
 
       <section class="metric-strip" aria-label="Resumo do dia">
         <article>
@@ -147,13 +150,17 @@
         </aside>
       </section>
 
-      <section id="cadastro" class="panel profile-panel" aria-labelledby="profileTitle">
+      <section id="perfil" class="panel profile-panel" aria-labelledby="profileTitle">
         <div class="section-heading">
           <div>
-            <p class="eyebrow">Cadastro</p>
+            <p class="eyebrow">Perfil</p>
             <h2 id="profileTitle">Perfil, metas e condição clínica</h2>
           </div>
           <button id="resetDayButton" class="ghost-button" type="button">Limpar dia</button>
+        </div>
+        <div id="onboardingNotice" class="onboarding-notice" hidden>
+          <strong>Primeiro acesso</strong>
+          <span>Preencha peso, altura, idade e objetivo para o FitARM calcular sua meta inicial.</span>
         </div>
 
         <form id="profileForm" class="profile-grid">

@@ -76,9 +76,11 @@ const PREP = {
 
 let deferredInstallPrompt = null;
 let supabaseClient = null;
+const savedProfileRaw = localStorage.getItem("fitarm-profile");
+const savedProfile = JSON.parse(savedProfileRaw || "null");
 
 const state = {
-  profile: JSON.parse(localStorage.getItem("fitarm-profile") || "null") || {
+  profile: savedProfile || {
     dailyCalories: 2200,
     weight: 80,
     height: 175,
@@ -95,6 +97,8 @@ const state = {
   pendingCandidates: [],
   editingLogIndex: null,
   user: null,
+  localSession: localStorage.getItem("fitarm-local-session") === "true",
+  profileComplete: Boolean(savedProfileRaw),
   cloudReady: false,
   log: JSON.parse(localStorage.getItem(storageKey()) || "[]")
 };
@@ -102,6 +106,9 @@ const state = {
 migrateProfileDefaults();
 
 const els = {
+  loginPage: document.querySelector("#loginPage"),
+  appShell: document.querySelector("#appShell"),
+  onboardingNotice: document.querySelector("#onboardingNotice"),
   todayLabel: document.querySelector("#todayLabel"),
   calorieBalance: document.querySelector("#calorieBalance"),
   consumedKcal: document.querySelector("#consumedKcal"),
@@ -125,6 +132,7 @@ const els = {
   adjustmentValue: document.querySelector("#adjustmentValue"),
   proteinTargetValue: document.querySelector("#proteinTargetValue"),
   installButton: document.querySelector("#installButton"),
+  topSignOutButton: document.querySelector("#topSignOutButton"),
   connectionStatus: document.querySelector("#connectionStatus"),
   cloudStatus: document.querySelector("#cloudStatus"),
   authForm: document.querySelector("#authForm"),
@@ -132,6 +140,7 @@ const els = {
   authPassword: document.querySelector("#authPassword"),
   signInButton: document.querySelector("#signInButton"),
   signUpButton: document.querySelector("#signUpButton"),
+  continueLocalButton: document.querySelector("#continueLocalButton"),
   signOutButton: document.querySelector("#signOutButton"),
   profileForm: document.querySelector("#profileForm"),
   chatLog: document.querySelector("#chatLog"),
@@ -635,6 +644,7 @@ function renderInsights() {
 }
 
 function renderAll() {
+  renderAppAccess();
   renderMetrics();
   renderLog();
   renderInsights();
@@ -653,15 +663,34 @@ function setCloudStatus(text, type = "ok") {
   els.cloudStatus.className = `cloud-status ${type === "ok" ? "" : type}`.trim();
 }
 
+function hasAppAccess() {
+  return Boolean(state.user || state.localSession);
+}
+
+function renderAppAccess() {
+  const access = hasAppAccess();
+  const needsProfile = access && !state.profileComplete;
+  if (els.loginPage) els.loginPage.hidden = access;
+  if (els.appShell) els.appShell.hidden = !access;
+  if (els.onboardingNotice) els.onboardingNotice.hidden = !needsProfile;
+  if (els.topSignOutButton) els.topSignOutButton.hidden = !access;
+  document.body.classList.toggle("needs-profile", needsProfile);
+  if (needsProfile && window.location.hash !== "#perfil") {
+    window.history.replaceState(null, "", "#perfil");
+  }
+}
+
 function renderAuthState() {
   const logged = Boolean(state.user);
-  els.signOutButton.hidden = !logged;
+  els.signOutButton.hidden = !hasAppAccess();
   els.signInButton.hidden = logged;
   els.signUpButton.hidden = logged;
+  if (els.continueLocalButton) els.continueLocalButton.hidden = logged;
   els.authPassword.hidden = logged;
   els.authEmail.value = state.user?.email || els.authEmail.value;
   els.authEmail.disabled = logged;
   setCloudStatus(logged ? "Sincronizado" : (state.cloudReady ? "Local" : "Local/offline"), state.cloudReady ? "ok" : "offline");
+  renderAppAccess();
 }
 
 function initSupabase() {
@@ -711,17 +740,27 @@ async function signUp() {
   appendBotChatDelayed("Conta criada. Se o Supabase pedir confirmação por e-mail, confirme antes de entrar.");
 }
 
-async function signOut() {
-  if (!supabaseClient) return;
-  await supabaseClient.auth.signOut();
-  state.user = null;
+function continueLocal() {
+  state.localSession = true;
+  localStorage.setItem("fitarm-local-session", "true");
+  setCloudStatus("Local", "offline");
   renderAuthState();
+  renderAll();
+}
+
+async function signOut() {
+  if (supabaseClient && state.user) await supabaseClient.auth.signOut();
+  state.user = null;
+  state.localSession = false;
+  localStorage.removeItem("fitarm-local-session");
+  renderAuthState();
+  renderAll();
 }
 
 async function syncAfterLogin() {
-  await saveProfileCloud();
-  await uploadLocalMealsCloud();
   await loadCloudProfile();
+  if (state.profileComplete) await saveProfileCloud();
+  await uploadLocalMealsCloud();
   await loadCloudMeals();
   renderAll();
 }
@@ -737,7 +776,9 @@ async function loadCloudProfile() {
   const { data, error } = await supabaseClient.from("profiles").select("*").eq("id", state.user.id).maybeSingle();
   if (error || !data) return;
   state.profile = profileFromRow(data);
+  state.profileComplete = true;
   localStorage.setItem("fitarm-profile", JSON.stringify(state.profile));
+  localStorage.setItem("fitarm-profile-complete", "true");
   hydrateProfile();
 }
 
@@ -978,7 +1019,9 @@ els.profileForm.addEventListener("submit", (event) => {
   readProfile();
   state.profile.dailyCalories = Math.round(suggestedCalories(state.profile) / 10) * 10;
   els.dailyCalories.value = state.profile.dailyCalories;
+  state.profileComplete = true;
   localStorage.setItem("fitarm-profile", JSON.stringify(state.profile));
+  localStorage.setItem("fitarm-profile-complete", "true");
   saveProfileCloud();
   renderSelected();
   renderAll();
@@ -1002,7 +1045,9 @@ els.goal.addEventListener("change", () => {
 els.addFoodButton.addEventListener("click", addFoodFromInput);
 els.signInButton.addEventListener("click", signIn);
 els.signUpButton.addEventListener("click", signUp);
+els.continueLocalButton.addEventListener("click", continueLocal);
 els.signOutButton.addEventListener("click", signOut);
+els.topSignOutButton.addEventListener("click", signOut);
 els.authForm.addEventListener("submit", (event) => {
   event.preventDefault();
   signIn();

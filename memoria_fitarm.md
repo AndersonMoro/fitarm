@@ -568,3 +568,16 @@ Criado em 2026-05-28:
 - `index.html` passou a carregar `app.js` com `type="module"`.
 - `sw.js` cacheia os arquivos de modulo na versao `fitarm-pwa-v7`.
 - Interface ganhou navegacao por areas: Refeicao, Diario, Cadastro e Base tecnica.
+
+## Login e primeiro acesso
+
+Atualizado em 2026-05-28:
+
+- Criada pagina inicial de login antes do app.
+- Login usa Supabase Auth quando disponivel.
+- Incluido botao "Continuar local" para teste sem conta.
+- Primeiro acesso sem perfil salvo abre o app em modo onboarding no Perfil.
+- Enquanto o perfil nao e salvo, Refeicao, Diario, Resumo e Base tecnica ficam ocultos.
+- Depois de salvar peso, altura, idade e objetivo, o app libera as abas.
+- A area "Cadastro" passou a ser tratada como aba "Perfil".
+- Cache PWA atualizado para `fitarm-pwa-v8`.
