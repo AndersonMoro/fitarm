@@ -614,6 +614,10 @@ function appendChat(text, type = "bot") {
   notifyInteraction(type);
 }
 
+function appendBotChatDelayed(text, delay = 1000) {
+  window.setTimeout(() => appendChat(text, "bot"), delay);
+}
+
 function notifyInteraction(type = "bot") {
   if (!("vibrate" in navigator)) return;
   const pattern = type === "user" ? 12 : [10, 30, 10];
@@ -632,6 +636,7 @@ function renderCandidateChoices(candidates) {
     button.addEventListener("click", () => {
       els.foodTypeChoices.innerHTML = "";
       state.pendingCandidates = [];
+      appendChat(food.name, "user");
       addFoodToMeal(food);
     });
     els.foodTypeChoices.append(button);
@@ -640,7 +645,7 @@ function renderCandidateChoices(candidates) {
 
 function addFoodToMeal(food) {
   state.selected.push({ food, prep: "cozido", oil: 0, sugar: 0, salt: 0, grams: 0, autoGrams: true });
-  appendChat(`${food.name} adicionado. Ajuste preparo, sal, óleo, açúcar e gramas no cartão abaixo.`, "bot");
+  appendBotChatDelayed(`${food.name} adicionado. Ajuste preparo, sal, óleo, açúcar e gramas no cartão abaixo.`);
   els.foodSearch.value = "";
   renderSelected();
   renderAll();
@@ -696,15 +701,19 @@ function addFoodFromInput() {
     els.foodTypeChoices.innerHTML = "";
     els.foodSearch.setCustomValidity("Alimento não encontrado na base técnica inicial.");
     els.foodSearch.reportValidity();
-    appendChat("Não encontrei esse alimento na base inicial. Tente outro nome, como arroz branco, feijão, ovo ou alface.", "bot");
+    appendBotChatDelayed("Não encontrei esse alimento na base inicial. Tente outro nome, como arroz branco, feijão, ovo ou alface.");
     setTimeout(() => els.foodSearch.setCustomValidity(""), 1600);
     return;
   }
 
   const exactFood = candidates.find((food) => normalize(food.name) === normalize(query));
-  if (candidates.length > 1 && !exactFood) {
-    appendChat("Encontrei mais de uma opção. Qual delas você quer usar?", "bot");
-    renderCandidateChoices(candidates);
+  const cleanQuery = normalize(query);
+  const sharedGenericAlias = candidates.length > 1 && candidates.some((food) => food.aliases.some((alias) => normalize(alias) === cleanQuery));
+  if (candidates.length > 1 && (!exactFood || sharedGenericAlias)) {
+    window.setTimeout(() => {
+      appendChat("Encontrei mais de uma opção. Qual delas você quer usar?", "bot");
+      renderCandidateChoices(candidates);
+    }, 1000);
     els.foodSearch.value = "";
     return;
   }

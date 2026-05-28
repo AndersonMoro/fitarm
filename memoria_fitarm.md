@@ -293,6 +293,8 @@ Mudancas implementadas em 2026-05-28:
 - Ajuste de 2026-05-28: ao editar uma refeicao do Diario, ela volta para a area de montagem para ajuste e novo registro.
 - Ajuste de 2026-05-28: sugestao inicial ficou maior, mostrando gramas, kcal e CG com mais destaque.
 - Ajuste de 2026-05-28: fluxo de conversa tenta vibrar em navegadores compativeis usando `navigator.vibrate`.
+- Ajuste de 2026-05-28: respostas do sistema na conversa aguardam 1 segundo para dar sensacao mais natural.
+- Ajuste de 2026-05-28: quando o usuario escolhe uma opcao sugerida, essa escolha tambem aparece como mensagem do usuario.
 
 ## Alimentos na base inicial
 
